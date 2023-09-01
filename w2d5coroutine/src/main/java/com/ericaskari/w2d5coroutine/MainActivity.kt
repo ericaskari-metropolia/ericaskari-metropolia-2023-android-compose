@@ -14,19 +14,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.ericaskari.w2d5coroutine.ui.theme.FirstComposeAppTheme
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlin.system.measureTimeMillis
 
 const val N = 100
+private val mutex = Mutex()  // our hero ;-)
 
 class MainActivity : ComponentActivity() {
     class Account {
         private var amount: Double = 0.0
         suspend fun deposit(amount: Double) {
-            val x = this.amount
-            delay(1) // simulates processing time
-            this.amount = x + amount
+            mutex.withLock {
+                val x = this.amount
+                delay(1) // simulates processing time
+                this.amount = x + amount
+            }
         }
 
         fun saldo(): Double = amount
@@ -57,12 +63,13 @@ class MainActivity : ComponentActivity() {
         coroutines */
         withTimeMeasurement("Two $N times deposit coroutines together", isActive = true) {
             runBlocking {
-                launch {
+                val routine1 = launch {
                     for (i in 1..N) account.deposit(1.0)
                 }
-                launch {
+                val routine2 = launch {
                     for (i in 1..N) account.deposit(1.0)
                 }
+                joinAll(routine1, routine2)
                 saldo2 = account.saldo()
             }
         }
