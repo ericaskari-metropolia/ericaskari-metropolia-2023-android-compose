@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 rootProject.name = "FirstComposeApp"
 include(":lab1")
 include(":w1d5composelist")
+include(":w2d4networkingandthreads")
