@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.ericaskari.w2d4networkingandthreads"
+    namespace = "com.ericaskari.w2d5coroutine"
     compileSdk = 33
 
     defaultConfig {
-        applicationId = "com.ericaskari.w2d4networkingandthreads"
+        applicationId = "com.ericaskari.w2d5coroutine"
         minSdk = 24
         targetSdk = 33
         versionCode = 1
@@ -63,7 +63,4 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
-    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation ("com.squareup.retrofit2:converter-gson:2.5.0")
-    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
 }

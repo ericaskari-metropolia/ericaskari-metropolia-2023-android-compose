@@ -1,7 +1,6 @@
 package com.ericaskari.w2d4networkingandthreads
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -19,7 +18,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -32,18 +30,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.await
 
 class MainActivity : ComponentActivity() {
+    private val service = RetrofitFactory.makeRetrofitService()
+
     companion object {
         private val parentJob = Job()
-        private val context = Dispatchers.Main + parentJob
         private val coroutineScope = CoroutineScope(Dispatchers.Default + parentJob)
-        private val secondScope = CoroutineScope(Dispatchers.IO + parentJob)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,13 +58,16 @@ class MainActivity : ComponentActivity() {
                         }
                         Button(
                             onClick = {
-                                sendRequest(
-                                    userList = userList
-                                )
-
-                                Log.d("Main Activity", userList.toString())
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    val response = service.getUsers().await()
+                                    CoroutineScope(Dispatchers.Main).launch {
+                                        userList.value = response
+                                    }
+                                }
                             },
-                            modifier = Modifier.height(50.dp).fillMaxWidth()
+                            modifier = Modifier
+                                .height(50.dp)
+                                .fillMaxWidth()
                         ) {
                             Text(text = "Get Data")
                         }
@@ -80,31 +77,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    }
-
-    private fun sendRequest(
-        userList: MutableState<List<UserModel>>
-    ) {
-        val retrofit = Retrofit.Builder()
-            .baseUrl("https://jsonplaceholder.typicode.com/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-
-        val api = retrofit.create(Api::class.java)
-
-        val call: Call<List<UserModel>> = api.getUsers();
-
-        call.enqueue(object: Callback<List<UserModel>> {
-            override fun onResponse(call: Call<List<UserModel>>, response: Response<List<UserModel>>) {
-                if(response.isSuccessful) {
-                    Log.d("Main", "success!" + response.body().toString())
-                    userList.value = response.body() ?: listOf()
-                }
-            }
-            override fun onFailure(call: Call<List<UserModel>>, t: Throwable) {
-                Log.e("Main", "Failed mate " + t.message.toString())
-            }
-        })
     }
 }
 
