@@ -13,10 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "FirstComposeApp"
-include(":lab1")
-include(":w1d5composelist")
-include(":w2d4networkingandthreads")
-include(":w2d5coroutine")
-include(":w2d5couroutinesnet")
-include(":w3d5retrofit")
+rootProject.name = "material-playground"
+include(":app")
