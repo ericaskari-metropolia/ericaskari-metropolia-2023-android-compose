@@ -1,0 +1,62 @@
+[
+  {
+    "name": "Kaarlo Juho Ståhlberg",
+    "startYear": 1919,
+    "endYear": 1925
+  },
+  {
+    "name": "Lauri Kristian Relander",
+    "startYear": 1925,
+    "endYear": 1931
+  },
+  {
+    "name": "Pehr Evind Svinhufvud",
+    "startYear": 1931,
+    "endYear": 1937
+  },
+  {
+    "name": "Kyösti Kallio",
+    "startYear": 1937,
+    "endYear": 1940
+  },
+  {
+    "name": "Risto Ryti",
+    "startYear": 1940,
+    "endYear": 1944
+  },
+  {
+    "name": "Gustaf Mannerheim",
+    "startYear": 1944,
+    "endYear": 1946
+  },
+  {
+    "name": "Juho Kusti Paasikivi",
+    "startYear": 1946,
+    "endYear": 1956
+  },
+  {
+    "name": "Urho Kekkonen",
+    "startYear": 1956,
+    "endYear": 1982
+  },
+  {
+    "name": "Mauno Henrik Koivisto",
+    "startYear": 1982,
+    "endYear": 1994
+  },
+  {
+    "name": "Martti Oiva Kalevi Ahtisaari",
+    "startYear": 1994,
+    "endYear": 2000
+  },
+  {
+    "name": "Tarja Kaarina Halonen",
+    "startYear": 2000,
+    "endYear": 2012
+  },
+  {
+    "name": "Sauli Väinämö Niinistö",
+    "startYear": 2012,
+    "endYear": "Present"
+  }
+]
