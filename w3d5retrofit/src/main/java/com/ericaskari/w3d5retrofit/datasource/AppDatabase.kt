@@ -45,23 +45,24 @@ abstract class AppDatabase : RoomDatabase() {
                     .also { Instance = it }
             }
         }
-    }
 
-    /**
-     * Database initializer
-     */
-    private class AppDatabaseCallback() : RoomDatabase.Callback() {
+
         /**
-         * Override the onCreate method to populate the database.
+         * Database initializer
          */
-        override fun onCreate(db: SupportSQLiteDatabase) {
-            super.onCreate(db)
+        private class AppDatabaseCallback() : Callback() {
+            /**
+             * Override the onCreate method to populate the database.
+             */
+            override fun onCreate(db: SupportSQLiteDatabase) {
+                super.onCreate(db)
 
-//            INSTANCE?.let { database ->
-//                scope.launch(Dispatchers.IO) {
-//                    database.populateDatabase(database.movieDao(), database.actorDao())
-//                }
-//            }
+                Instance?.let { database ->
+                    CoroutineScope(Dispatchers.IO).launch {
+                        Instance.populateDatabase(database.movieDao(), database.actorDao())
+                    }
+            }
+            }
         }
     }
 
