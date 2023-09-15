@@ -2,10 +2,12 @@ package com.ericaskari.w3d5retrofit
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -20,27 +22,29 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.ericaskari.w3d5retrofit.data.AppViewModelProvider
 import com.ericaskari.w3d5retrofit.entities.Actor
 import com.ericaskari.w3d5retrofit.entities.ActorViewModel
 import com.ericaskari.w3d5retrofit.entities.Movie
+import com.ericaskari.w3d5retrofit.entities.MovieViewModel
+import com.ericaskari.w3d5retrofit.forms.NewActorForm
+import com.ericaskari.w3d5retrofit.forms.NewMovieForm
 import com.ericaskari.w3d5retrofit.ui.theme.AppMaterialTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.ericaskari.w3d5retrofit.data.AppViewModelProvider
-import com.ericaskari.w3d5retrofit.entities.MovieViewModel
 
 class MainActivity : ComponentActivity() {
 
@@ -65,12 +69,14 @@ class MainActivity : ComponentActivity() {
                 NavHost(navController = navController, startDestination = "movies") {
                     composable("movies") { backStackEntry ->
 
-                        Movies(navController) }
+                        Movies(navController)
+                    }
                     composable(
                         "movies/{movieId}/actors",
                         arguments = listOf(navArgument("movieId") { type = NavType.StringType }),
                     ) { backStackEntry ->
-                        Actors( backStackEntry.arguments?.getString("movieId")) }
+                        Actors(backStackEntry.arguments?.getString("movieId"))
+                    }
                 }
 
             }
@@ -83,28 +89,41 @@ fun Movies(navHostController: NavHostController, viewModel: MovieViewModel = vie
     val items = viewModel.items.collectAsState(initial = mutableListOf())
 
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-        MovieList(items.value) {
-            navHostController.navigate("movies/${it}/actors")
+        Column {
+            val context = LocalContext.current
+
+            NewMovieForm { movie, saved ->
+                CoroutineScope(Dispatchers.Main).launch {
+                    viewModel.save(movie)
+                    saved(true)
+                    Toast.makeText(context, "Movie Saved!", Toast.LENGTH_SHORT).show()
+                }
+            }
+            MovieList(items.value) {
+                navHostController.navigate("movies/${it}/actors")
+            }
         }
     }
+
 }
 
 
 @Composable
 fun Actors(movieId: String?, viewModel: ActorViewModel = viewModel(factory = AppViewModelProvider.Factory)) {
     val items = viewModel.items.collectAsState(initial = mutableListOf())
-
-//    LaunchedEffect(Unit, block = {
-//        CoroutineScope(Dispatchers.IO).launch {
-//            val response = service.getActors().await()
-//            CoroutineScope(Dispatchers.Main).launch {
-//                items.value = response
-//            }
-//        }
-//    })
-
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-        ActorList(items.value.filter { it.movieId == movieId }) {
+        Column {
+            val context = LocalContext.current
+
+            NewActorForm(movieId = movieId) { movie, saved ->
+                CoroutineScope(Dispatchers.Main).launch {
+                    viewModel.save(movie)
+                    saved(true)
+                    Toast.makeText(context, "Actor Saved!", Toast.LENGTH_SHORT).show()
+                }
+            }
+            ActorList(items.value.filter { it.movieId == movieId }) {
+            }
         }
     }
 }
@@ -156,6 +175,7 @@ fun MovieListItem(data: Movie, onClick: (id: String) -> Unit) {
         },
     )
 }
+
 @Composable
 fun ActorListItem(data: Actor, onClick: (id: String) -> Unit) {
     ListItem(
