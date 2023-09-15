@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.ericaskari.w3d5retrofit.ui.theme.AppMaterialTheme
 import com.ericaskari.w3d5retrofit.ui.theme.FirstComposeAppTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -49,7 +50,7 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            FirstComposeAppTheme {
+            AppMaterialTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     Column {
@@ -118,10 +119,11 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
     )
 }
 
+
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
-    FirstComposeAppTheme {
+    AppMaterialTheme {
         Greeting("Android")
     }
 }
