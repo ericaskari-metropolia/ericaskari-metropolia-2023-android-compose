@@ -6,7 +6,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 object RetrofitFactory {
     fun makeMetropoliaApiService(): MetropoliaApi {
         return Retrofit.Builder()
-            .baseUrl("https://jsonplaceholder.typicode.com/")
+            .baseUrl("https://users.metropolia.fi/~mohamas/")
             .addConverterFactory(GsonConverterFactory.create())
             .build().create(MetropoliaApi::class.java)
 

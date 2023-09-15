@@ -32,11 +32,13 @@ object AppViewModelProvider {
     val Factory = viewModelFactory {
         // Initializer for ItemEditViewModel
         initializer {
-            WikiViewModel(
-                MyApplication().container.wikiRepository
-            )
             MetropoliaViewModel(
                 MyApplication().container.metropoliaRepository
+            )
+        }
+        addInitializer(WikiViewModel::class) {
+            WikiViewModel(
+                MyApplication().container.wikiRepository
             )
         }
     }

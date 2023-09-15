@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -62,9 +63,11 @@ fun ApplicationContent(
     metropoliaViewModel: MetropoliaViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val items = metropoliaViewModel.presidents.collectAsState(initial = mutableListOf())
-
-    PresidentList(items.value) {
-
+    Column {
+        Text("Hits: ${wikiViewModel.wikiUiState}")
+        PresidentList(items.value) {
+            wikiViewModel.getHits(it)
+        }
     }
 
 }
