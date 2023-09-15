@@ -2,24 +2,29 @@ package com.ericaskari.w3d5retrofit.entities
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
+import kotlinx.coroutines.flow.Flow
 
 /**
  * @author Mohammad Askari
  */
 @Dao
 interface MovieDao {
-    @Query("SELECT * FROM Movie")
-    fun find(): LiveData<List<Movie>>
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insert(item: Movie)
 
-    @Query("SELECT * FROM Movie WHERE id = :id")
-    fun findById(id: String): LiveData<List<Movie>>
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertItems(vararg items: Movie)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(vararg movies: Movie)
+    @Update
+    suspend fun update(item: Movie)
 
     @Delete
-    fun delete(movie: Movie)
+    suspend fun delete(item: Movie)
 
-    @Query("DELETE FROM Movie")
-    fun deleteAll()
+    @Query("SELECT * from Movie WHERE id = :id")
+    fun getItem(id: String): Flow<Movie>
+
+    @Query("SELECT * from Movie ORDER BY name ASC")
+    fun getAllItems(): Flow<List<Movie>>
+
 }

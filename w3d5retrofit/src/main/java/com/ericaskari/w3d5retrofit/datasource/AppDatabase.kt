@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 /**
  * @author Mohammad Askari
  */
-@Database(entities = [Actor::class, Movie::class], version = 1)
+@Database(entities = [Actor::class, Movie::class], version = 1, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun movieDao(): MovieDao
@@ -27,19 +27,22 @@ abstract class AppDatabase : RoomDatabase() {
         private var DB_NAME: String = "w3d5retrofit"
 
         @Volatile
-        private var INSTANCE: AppDatabase? = null
+        private var Instance: AppDatabase? = null
 
-        fun getInstance(context: Context, scope: CoroutineScope): AppDatabase {
-            return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(context.applicationContext, AppDatabase::class.java, DB_NAME)
+        fun getInstance(context: Context): AppDatabase {
+//            return Instance ?: synchronized(this) {
+//                val instance = Room.databaseBuilder(context, AppDatabase::class.java, DB_NAME)
+//                    .fallbackToDestructiveMigration()
+//                    .addCallback(AppDatabaseCallback())
+//                    .build()
+//                    .also { Instance = it }
+//            }
+            return Instance ?: synchronized(this) {
+                Room.databaseBuilder(context, AppDatabase::class.java, DB_NAME)
                     .fallbackToDestructiveMigration()
-                    .addCallback(AppDatabaseCallback(scope))
+                    .addCallback(AppDatabaseCallback())
                     .build()
-
-                INSTANCE = instance
-
-                // return instance
-                instance
+                    .also { Instance = it }
             }
         }
     }
@@ -47,18 +50,18 @@ abstract class AppDatabase : RoomDatabase() {
     /**
      * Database initializer
      */
-    private class AppDatabaseCallback(private val scope: CoroutineScope) : RoomDatabase.Callback() {
+    private class AppDatabaseCallback() : RoomDatabase.Callback() {
         /**
          * Override the onCreate method to populate the database.
          */
         override fun onCreate(db: SupportSQLiteDatabase) {
             super.onCreate(db)
 
-            INSTANCE?.let { database ->
-                scope.launch(Dispatchers.IO) {
-                    database.populateDatabase(database.movieDao(), database.actorDao())
-                }
-            }
+//            INSTANCE?.let { database ->
+//                scope.launch(Dispatchers.IO) {
+//                    database.populateDatabase(database.movieDao(), database.actorDao())
+//                }
+//            }
         }
     }
 
@@ -116,7 +119,7 @@ abstract class AppDatabase : RoomDatabase() {
         )
 
         actorDao.insertItems(*actors.toTypedArray())
-        movieDao.insert(*movies.toTypedArray())
+        movieDao.insertItems(*movies.toTypedArray())
 
         println("one time populating the database")
     }

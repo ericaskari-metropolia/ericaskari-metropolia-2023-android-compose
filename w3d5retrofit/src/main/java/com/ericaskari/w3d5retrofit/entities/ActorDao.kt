@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.Flow
 interface ActorDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(item: Actor)
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertItems(vararg items: Actor)
 

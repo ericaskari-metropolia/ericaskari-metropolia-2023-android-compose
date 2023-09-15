@@ -1,20 +1,41 @@
 package com.example.exercise_5.ui.member
+import kotlinx.coroutines.flow.Flow
 
 import com.ericaskari.w3d5retrofit.entities.Movie
-import com.ericaskari.w3d5retrofit.entities.MovieDao
+
 
 
 /**
- * @author Mohammad Askari
+ * Repository that provides insert, update, delete, and retrieve of [Item] from a given data source.
  */
-class MovieRepository(private val dao: MovieDao) {
-    fun find() = dao.find()
+interface IMovieRepository {
+    /**
+     * Retrieve all the items from the the given data source.
+     */
+    fun getAllItemsStream(): Flow<List<Movie>>
 
-    fun findById(id: String) = dao.findById(id)
+    /**
+     * Retrieve an item from the given data source that matches with the [id].
+     */
+    fun getItemStream(id: String): Flow<Movie?>
 
-    fun insert(vararg items: Movie) = dao.insert(*items)
+    /**
+     * Insert item in the data source
+     */
+    suspend fun insertItem(item: Movie)
 
-    fun delete(items: Movie) = dao.delete(items)
+    /**
+     * Insert item in the data source
+     */
+    suspend fun insertItems(vararg items: Movie)
 
-    fun deleteAll() = dao.deleteAll()
+    /**
+     * Delete item from the data source
+     */
+    suspend fun deleteItem(item: Movie)
+
+    /**
+     * Update item in the data source
+     */
+    suspend fun updateItem(item: Movie)
 }
