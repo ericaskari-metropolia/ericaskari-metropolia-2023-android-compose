@@ -59,9 +59,9 @@ abstract class AppDatabase : RoomDatabase() {
 
                 Instance?.let { database ->
                     CoroutineScope(Dispatchers.IO).launch {
-                        Instance.populateDatabase(database.movieDao(), database.actorDao())
+                        Instance!!.populateDatabase(database.movieDao(), database.actorDao())
                     }
-            }
+                }
             }
         }
     }
@@ -69,7 +69,6 @@ abstract class AppDatabase : RoomDatabase() {
     /**
      * Database initializer
      */
-    @Suppress("RedundantSuspendModifier")
     suspend fun populateDatabase(movieDao: MovieDao, actorDao: ActorDao) {
         val movies = listOf(
             Movie("1", "Inception", "2010", "Christopher Nolan"),
