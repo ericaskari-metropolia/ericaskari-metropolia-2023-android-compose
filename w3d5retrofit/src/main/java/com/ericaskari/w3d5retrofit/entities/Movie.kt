@@ -10,7 +10,5 @@ data class Movie(
     @ColumnInfo val name: String,
     @ColumnInfo var year: String,
     @ColumnInfo val director: String,
-) {
-
-}
+)
 

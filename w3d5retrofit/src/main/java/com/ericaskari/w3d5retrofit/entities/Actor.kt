@@ -9,6 +9,7 @@ data class Actor(
     @PrimaryKey val id: String,
     @ColumnInfo val name: String,
     @ColumnInfo val movieId: String,
+    @ColumnInfo val role: String,
 ) {
 
 }

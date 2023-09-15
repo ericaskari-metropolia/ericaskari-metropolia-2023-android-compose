@@ -1,0 +1,62 @@
+[
+  {
+    "id": "1",
+    "name": "Inception",
+    "year": "2010",
+    "director": "Christopher Nolan"
+  },
+  {
+    "id": "2",
+    "name": "The Shawshank Redemption",
+    "year": "1994",
+    "director": "Frank Darabont"
+  },
+  {
+    "id": "3",
+    "name": "Pulp Fiction",
+    "year": "1994",
+    "director": "Quentin Tarantino"
+  },
+  {
+    "id": "4",
+    "name": "The Godfather",
+    "year": "1972",
+    "director": "Francis Ford Coppola"
+  },
+  {
+    "id": "5",
+    "name": "Forrest Gump",
+    "year": "1994",
+    "director": "Robert Zemeckis"
+  },
+  {
+    "id": "6",
+    "name": "The Dark Knight",
+    "year": "2008",
+    "director": "Christopher Nolan"
+  },
+  {
+    "id": "7",
+    "name": "Fight Club",
+    "year": "1999",
+    "director": "David Fincher"
+  },
+  {
+    "id": "8",
+    "name": "The Matrix",
+    "year": "1999",
+    "director": "The Wachowskis"
+  },
+  {
+    "id": "9",
+    "name": "Gladiator",
+    "year": "2000",
+    "director": "Ridley Scott"
+  },
+  {
+    "id": "10",
+    "name": "The Lord of the Rings: The Fellowship of the Ring",
+    "year": "2001",
+    "director": "Peter Jackson"
+  }
+]

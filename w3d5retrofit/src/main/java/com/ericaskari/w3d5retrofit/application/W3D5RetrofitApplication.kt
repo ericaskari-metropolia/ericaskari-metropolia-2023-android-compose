@@ -2,7 +2,7 @@ package com.ericaskari.w3d5retrofit.application
 
 import android.app.Application
 import com.ericaskari.w3d5retrofit.datasource.AppDatabase
-import com.example.exercise_5.ui.member.ActorRepository
+import com.ericaskari.w3d5retrofit.entities.OfflineActorsRepository
 import com.example.exercise_5.ui.member.MovieRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -19,6 +19,6 @@ class W3D5RetrofitApplication : Application() {
     private val appDatabase by lazy { AppDatabase.getInstance(this, applicationScope) }
 
     //  App Repositories
-    val actorRepository by lazy { ActorRepository(appDatabase.actorDao()) }
+    val actorRepository by lazy { OfflineActorsRepository(appDatabase.actorDao()) }
     val movieRepository by lazy { MovieRepository(appDatabase.movieDao()) }
 }
