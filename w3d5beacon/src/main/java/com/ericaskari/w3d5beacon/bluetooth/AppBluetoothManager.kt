@@ -15,7 +15,6 @@ class AppBluetoothManager(
     private val bluetoothAdapter: BluetoothAdapter,
     private val scope: CoroutineScope,
     private val appBluetoothSearchRepository: IAppBluetoothSearchRepository,
-//    private val parseScanResult: ParseScanResult
 ) {
     val userMessage = MutableStateFlow<String?>(null)
     val isScanning = MutableStateFlow(false)

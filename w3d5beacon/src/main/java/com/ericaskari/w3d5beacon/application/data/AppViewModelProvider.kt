@@ -32,7 +32,7 @@ object AppViewModelProvider {
     val Factory = viewModelFactory {
         initializer {
             AppBluetoothViewModel(
-                appBluetoothManager = MyApplication().appBluetoothManager.value!!,
+                appBluetoothManager = MyApplication().appBluetoothManager,
             )
         }
         addInitializer(AppBluetoothSearchViewModel::class) {

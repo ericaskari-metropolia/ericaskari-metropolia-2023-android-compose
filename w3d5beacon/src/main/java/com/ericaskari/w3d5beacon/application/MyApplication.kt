@@ -19,22 +19,21 @@ class MyApplication : Application() {
     /**
      * AppContainer instance used by the rest of classes to obtain dependencies
      */
-    lateinit var container: AppContainer
 
-    val bluetoothManager: Lazy<BluetoothManager> = lazy { getSystemService(BluetoothManager::class.java) }
-    val bluetoothAdapter: Lazy<BluetoothAdapter?> = lazy { bluetoothManager.value.adapter }
-    val appBluetoothManager: Lazy<AppBluetoothManager?> = lazy {
-        bluetoothAdapter.value?.let {
-            AppBluetoothManager(
-                bluetoothAdapter = it,
-                scope = coroutineScope,
-                appBluetoothSearchRepository = container.appBluetoothSearchRepository
-            )
-        }
-    }
+    lateinit var bluetoothManager: BluetoothManager
+    lateinit var bluetoothAdapter: BluetoothAdapter
+    lateinit var appBluetoothManager: AppBluetoothManager
+    lateinit var container: AppContainer
 
     override fun onCreate() {
         super.onCreate()
-        container = AppDataContainer(this, bluetoothManager, bluetoothAdapter)
+        container = AppDataContainer(this)
+        bluetoothManager = getSystemService(BluetoothManager::class.java)
+        bluetoothAdapter = bluetoothManager.adapter
+        appBluetoothManager = AppBluetoothManager(
+            bluetoothAdapter = bluetoothAdapter,
+            scope = coroutineScope,
+            appBluetoothSearchRepository = container.appBluetoothSearchRepository
+        )
     }
 }

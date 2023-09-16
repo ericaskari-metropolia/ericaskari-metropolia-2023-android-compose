@@ -1,7 +1,5 @@
 package com.ericaskari.w3d5beacon.application.data
 
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothManager
 import android.content.Context
 import com.ericaskari.w3d5beacon.bluetoothsearch.AppBluetoothSearchRepository
 import com.ericaskari.w3d5beacon.bluetoothsearch.IAppBluetoothSearchRepository
@@ -16,7 +14,7 @@ interface AppContainer {
 //    val metropoliaRepository: IMetropoliaRepository
 }
 
-class AppDataContainer(private val context: Context, bluetoothManager: Lazy<BluetoothManager>, bluetoothAdapter: Lazy<BluetoothAdapter?>) :
+class AppDataContainer(private val context: Context) :
     AppContainer {
 
     override val appBluetoothSearchRepository: IAppBluetoothSearchRepository by lazy {
