@@ -7,8 +7,10 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
-import android.bluetooth.BluetoothProfile
 import android.os.Build
+import com.ericaskari.w4d5bluetooth.bluetoothdeviceservice.BluetoothDeviceService
+import com.ericaskari.w4d5bluetooth.bluetoothdeviceservice.IBluetoothDeviceServiceRepository
+import com.ericaskari.w4d5bluetooth.bluetoothsearch.IBluetoothDeviceRepository
 import com.ericaskari.w4d5bluetooth.enums.ConnectionState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -187,6 +189,8 @@ data class DeviceService(
 
 
 class AppBluetoothGattService(
+    private val bluetoothDeviceRepository: IBluetoothDeviceRepository,
+    private val bluetoothDeviceServiceRepository: IBluetoothDeviceServiceRepository,
     private val btAdapter: BluetoothAdapter,
     private val scope: CoroutineScope,
     private val app: Application,
@@ -196,160 +200,19 @@ class AppBluetoothGattService(
     val connectMessage = MutableStateFlow(ConnectionState.DISCONNECTED)
     val deviceDetails = MutableStateFlow<List<DeviceService>>(emptyList())
 
-    private val bluetoothGattCallback = object : BluetoothGattCallback() {
-
-        @SuppressLint("MissingPermission")
-        override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
-            super.onConnectionStateChange(gatt, status, newState)
-            println("[AppBluetoothGattService][bluetoothGattCallback] onConnectionStateChange")
+    private val bluetoothGattCallback = appBluetoothGattCallbackFactory(
+        scope = scope,
+        onConnectionStateChange = { gatt, connectionState ->
             btGatt = gatt
-            println("status: $status newState: $newState")
-
-            when (newState) {
-                BluetoothProfile.STATE_CONNECTING -> connectMessage.value =
-                    ConnectionState.CONNECTING
-
-                BluetoothProfile.STATE_CONNECTED -> {
-                    connectMessage.value = ConnectionState.CONNECTED
-                    btGatt?.discoverServices()
-                }
-
-                BluetoothProfile.STATE_DISCONNECTING -> connectMessage.value =
-                    ConnectionState.DISCONNECTING
-
-                BluetoothProfile.STATE_DISCONNECTED -> connectMessage.value =
-                    ConnectionState.DISCONNECTED
-
-                else -> connectMessage.value = ConnectionState.DISCONNECTED
-            }
-        }
-
-        override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
-            super.onServicesDiscovered(gatt, status)
-            println("[AppBluetoothGattService][bluetoothGattCallback] onServicesDiscovered: status: $status")
-
+            connectMessage.value = connectionState
+            println("connectionState: $connectionState")
+        },
+        enableNotificationsAndIndications = {
             scope.launch {
-                deviceDetails.value = emptyList()
-                gatt?.let {
-                    println(it)
-                    it.services?.forEach { service ->
-                        println("Service: ${service.uuid}")
-
-                        service.characteristics.forEach { char ->
-                            val permissions = char.permissions
-                            println("Service: ${service.uuid} characteristics: ${char.uuid} permissions: $permissions")
-
-                            char.descriptors.forEach { descriptor ->
-                                println("Service: ${service.uuid} characteristics: ${char.uuid} permissions: $permissions descriptor: ${descriptor.uuid}")
-                            }
-                        }
-                    }
-
-//                    deviceDetails.value = parseService(it, status)
-                    enableNotificationsAndIndications()
-                }
+                enableNotificationsAndIndications()
             }
         }
-
-        override fun onCharacteristicRead(
-            gatt: BluetoothGatt,
-            characteristic: BluetoothGattCharacteristic,
-            value: ByteArray,
-            status: Int
-        ) {
-            super.onCharacteristicRead(gatt, characteristic, value, status)
-            println("[AppBluetoothGattService][bluetoothGattCallback] onCharacteristicRead")
-//            deviceDetails.value = parseRead(deviceDetails.value, characteristic, status)
-        }
-
-        @Deprecated("Deprecated in Java")
-        override fun onCharacteristicRead(
-            gatt: BluetoothGatt,
-            characteristic: BluetoothGattCharacteristic,
-            status: Int
-        ) {
-            super.onCharacteristicRead(gatt, characteristic, status)
-            println("[AppBluetoothGattService][bluetoothGattCallback] onCharacteristicRead")
-//            deviceDetails.value = parseRead(deviceDetails.value, characteristic, status)
-        }
-
-        @Deprecated("Deprecated in Java")
-        override fun onCharacteristicChanged(
-            gatt: BluetoothGatt?,
-            characteristic: BluetoothGattCharacteristic
-        ) {
-            super.onCharacteristicChanged(gatt, characteristic)
-            println("[AppBluetoothGattService][bluetoothGattCallback] onCharacteristicChanged")
-            println("characteristic changed: ${characteristic.value}")
-//            deviceDetails.value = parseNotification(deviceDetails.value, characteristic, characteristic.value)
-        }
-
-        override fun onCharacteristicChanged(
-            gatt: BluetoothGatt,
-            characteristic: BluetoothGattCharacteristic,
-            value: ByteArray
-        ) {
-            super.onCharacteristicChanged(gatt, characteristic, value)
-            println("[AppBluetoothGattService][bluetoothGattCallback] onCharacteristicChanged")
-            println("characteristic changed: ${value}")
-//            deviceDetails.value = parseNotification(deviceDetails.value, characteristic, value)
-        }
-
-        @Deprecated("Deprecated in Java")
-        override fun onDescriptorRead(
-            gatt: BluetoothGatt?,
-            descriptor: BluetoothGattDescriptor,
-            status: Int
-        ) {
-            super.onDescriptorRead(gatt, descriptor, status)
-            println("[AppBluetoothGattService][bluetoothGattCallback] onDescriptorRead")
-
-            println(
-                "descriptor read: ${descriptor.uuid}, " +
-                        "${descriptor.characteristic.uuid}, $status, ${descriptor.value}"
-            )
-
-//            deviceDetails.value = parseDescriptor(deviceDetails.value, descriptor, status, descriptor.value)
-        }
-
-        override fun onDescriptorRead(
-            gatt: BluetoothGatt,
-            descriptor: BluetoothGattDescriptor,
-            status: Int,
-            value: ByteArray
-        ) {
-            super.onDescriptorRead(gatt, descriptor, status, value)
-            println("[AppBluetoothGattService][bluetoothGattCallback] onDescriptorRead")
-
-            println(
-                "descriptor read: ${descriptor.uuid}, " +
-                        "${descriptor.characteristic.uuid}, $status, ${value}"
-            )
-
-//            deviceDetails.value = parseDescriptor(deviceDetails.value, descriptor, status, value)
-        }
-
-        override fun onCharacteristicWrite(
-            gatt: BluetoothGatt?,
-            characteristic: BluetoothGattCharacteristic,
-            status: Int
-        ) {
-            super.onCharacteristicWrite(gatt, characteristic, status)
-            println("[AppBluetoothGattService][bluetoothGattCallback] onCharacteristicWrite")
-//            btGatt?.readCharacteristic(characteristic)
-        }
-
-        override fun onDescriptorWrite(
-            gatt: BluetoothGatt?,
-            descriptor: BluetoothGattDescriptor,
-            status: Int
-        ) {
-            super.onDescriptorWrite(gatt, descriptor, status)
-            println("[AppBluetoothGattService][bluetoothGattCallback] onCharacteristicWrite")
-            println("descriptor write: ${descriptor.uuid}, ${descriptor.characteristic.uuid}, $status")
-        }
-
-    }
+    )
 
     suspend fun enableNotificationsAndIndications() {
         println("[AppBluetoothGattService] enableNotificationsAndIndications")
@@ -475,15 +338,63 @@ class AppBluetoothGattService(
     }
 
     companion object {
-        private fun appBluetoothGattCallbackFactory(): BluetoothGattCallback {
+
+        private fun appBluetoothGattCallbackFactory(
+            scope: CoroutineScope,
+            onConnectionStateChange: (gatt: BluetoothGatt, connectionState: ConnectionState) -> Unit,
+            enableNotificationsAndIndications: () -> Unit
+        ): BluetoothGattCallback {
+
             return object : BluetoothGattCallback() {
+
+                @SuppressLint("MissingPermission")
                 override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
                     super.onConnectionStateChange(gatt, status, newState)
+                    println("[AppBluetoothGattService][bluetoothGattCallback] onConnectionStateChange")
+
+                    val connectionState = ConnectionState.fromBluetoothProfileState(newState)
+
+                    onConnectionStateChange(gatt, connectionState)
+
+                    if (connectionState == ConnectionState.CONNECTED) {
+                        gatt.discoverServices()
+                    }
                 }
 
                 override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
                     super.onServicesDiscovered(gatt, status)
+                    println("[AppBluetoothGattService][bluetoothGattCallback] onServicesDiscovered: status: $status")
+                    if (gatt == null) {
+                        println("[AppBluetoothGattService][bluetoothGattCallback] onServicesDiscovered: gatt is null")
+                        return
+                    }
+                    scope.launch {
+                        // deviceDetails.value = emptyList()
+                        println(gatt)
 
+                        var serviceItems =
+                            gatt.services.map {
+                                BluetoothDeviceService(it.uuid.toString(), gatt.device.address)
+                            }
+
+
+                        gatt.services?.forEach { service ->
+                            println("Service: ${service.uuid}")
+
+
+                            service.characteristics.forEach { char ->
+                                val permissions = char.permissions
+                                println("Service: ${service.uuid} characteristics: ${char.uuid} permissions: $permissions")
+
+                                char.descriptors.forEach { descriptor ->
+                                    println("Service: ${service.uuid} characteristics: ${char.uuid} permissions: $permissions descriptor: ${descriptor.uuid}")
+                                }
+                            }
+                        }
+
+                        // deviceDetails.value = parseService(it, status)
+                        enableNotificationsAndIndications()
+                    }
                 }
 
                 override fun onCharacteristicRead(
@@ -493,29 +404,30 @@ class AppBluetoothGattService(
                     status: Int
                 ) {
                     super.onCharacteristicRead(gatt, characteristic, value, status)
+                    println("[AppBluetoothGattService][bluetoothGattCallback] onCharacteristicRead")
+//            deviceDetails.value = parseRead(deviceDetails.value, characteristic, status)
                 }
 
-                @Deprecated(
-                    "Deprecated in Java",
-                    ReplaceWith("super.onCharacteristicRead(gatt, characteristic, status)", "android.bluetooth.BluetoothGattCallback")
-                )
+                @Deprecated("Deprecated in Java")
                 override fun onCharacteristicRead(
                     gatt: BluetoothGatt,
                     characteristic: BluetoothGattCharacteristic,
                     status: Int
                 ) {
                     super.onCharacteristicRead(gatt, characteristic, status)
+                    println("[AppBluetoothGattService][bluetoothGattCallback] onCharacteristicRead")
+//            deviceDetails.value = parseRead(deviceDetails.value, characteristic, status)
                 }
 
-                @Deprecated(
-                    "Deprecated in Java",
-                    ReplaceWith("super.onCharacteristicChanged(gatt, characteristic)", "android.bluetooth.BluetoothGattCallback")
-                )
+                @Deprecated("Deprecated in Java")
                 override fun onCharacteristicChanged(
                     gatt: BluetoothGatt?,
                     characteristic: BluetoothGattCharacteristic
                 ) {
                     super.onCharacteristicChanged(gatt, characteristic)
+                    println("[AppBluetoothGattService][bluetoothGattCallback] onCharacteristicChanged")
+                    println("characteristic changed: ${characteristic.value}")
+//            deviceDetails.value = parseNotification(deviceDetails.value, characteristic, characteristic.value)
                 }
 
                 override fun onCharacteristicChanged(
@@ -524,18 +436,26 @@ class AppBluetoothGattService(
                     value: ByteArray
                 ) {
                     super.onCharacteristicChanged(gatt, characteristic, value)
+                    println("[AppBluetoothGattService][bluetoothGattCallback] onCharacteristicChanged")
+                    println("characteristic changed: ${value}")
+//            deviceDetails.value = parseNotification(deviceDetails.value, characteristic, value)
                 }
 
-                @Deprecated(
-                    "Deprecated in Java",
-                    ReplaceWith("super.onDescriptorRead(gatt, descriptor, status)", "android.bluetooth.BluetoothGattCallback")
-                )
+                @Deprecated("Deprecated in Java")
                 override fun onDescriptorRead(
                     gatt: BluetoothGatt?,
                     descriptor: BluetoothGattDescriptor,
                     status: Int
                 ) {
                     super.onDescriptorRead(gatt, descriptor, status)
+                    println("[AppBluetoothGattService][bluetoothGattCallback] onDescriptorRead")
+
+                    println(
+                        "descriptor read: ${descriptor.uuid}, " +
+                                "${descriptor.characteristic.uuid}, $status, ${descriptor.value}"
+                    )
+
+//            deviceDetails.value = parseDescriptor(deviceDetails.value, descriptor, status, descriptor.value)
                 }
 
                 override fun onDescriptorRead(
@@ -545,6 +465,14 @@ class AppBluetoothGattService(
                     value: ByteArray
                 ) {
                     super.onDescriptorRead(gatt, descriptor, status, value)
+                    println("[AppBluetoothGattService][bluetoothGattCallback] onDescriptorRead")
+
+                    println(
+                        "descriptor read: ${descriptor.uuid}, " +
+                                "${descriptor.characteristic.uuid}, $status, ${value}"
+                    )
+
+//            deviceDetails.value = parseDescriptor(deviceDetails.value, descriptor, status, value)
                 }
 
                 override fun onCharacteristicWrite(
@@ -553,6 +481,8 @@ class AppBluetoothGattService(
                     status: Int
                 ) {
                     super.onCharacteristicWrite(gatt, characteristic, status)
+                    println("[AppBluetoothGattService][bluetoothGattCallback] onCharacteristicWrite")
+//            btGatt?.readCharacteristic(characteristic)
                 }
 
                 override fun onDescriptorWrite(
@@ -561,6 +491,8 @@ class AppBluetoothGattService(
                     status: Int
                 ) {
                     super.onDescriptorWrite(gatt, descriptor, status)
+                    println("[AppBluetoothGattService][bluetoothGattCallback] onCharacteristicWrite")
+                    println("descriptor write: ${descriptor.uuid}, ${descriptor.characteristic.uuid}, $status")
                 }
 
             }
