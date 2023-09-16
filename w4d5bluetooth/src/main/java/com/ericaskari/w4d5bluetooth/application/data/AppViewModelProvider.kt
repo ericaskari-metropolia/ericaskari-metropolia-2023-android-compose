@@ -33,6 +33,7 @@ object AppViewModelProvider {
         initializer {
             AppBluetoothViewModel(
                 appBluetoothManager = MyApplication().appBluetoothManager.value!!,
+                appBluetoothObserver = MyApplication().appBluetoothObserver,
             )
         }
         addInitializer(AppBluetoothSearchViewModel::class) {

@@ -6,10 +6,10 @@ import androidx.lifecycle.ViewModel
 
 class AppBluetoothViewModel(
     private val appBluetoothManager: AppBluetoothManager,
-
-    ) : ViewModel() {
+    private val appBluetoothObserver: AppBluetoothObserver,
+) : ViewModel() {
     val isScanning by mutableStateOf(appBluetoothManager.isScanning)
-    val scannerMessage = appBluetoothManager.userMessage
+    val bluetoothAdapterState = appBluetoothObserver.bluetoothAdapterState
 
 
     fun startScan() {
@@ -20,6 +20,10 @@ class AppBluetoothViewModel(
     fun stopScan() {
         appBluetoothManager.scanEnabled = false
         appBluetoothManager.stopScan()
+    }
+
+    fun askToTurnBluetoothOn() {
+        appBluetoothObserver.launchEnableBtAdapter()
     }
 
 //    fun getReadBytes(): ByteArray? {

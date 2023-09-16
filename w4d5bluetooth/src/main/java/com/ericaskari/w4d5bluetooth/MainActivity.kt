@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.ericaskari.w4d5bluetooth.application.MyApplication
 import com.ericaskari.w4d5bluetooth.application.data.AppViewModelProvider
 import com.ericaskari.w4d5bluetooth.bluetooth.AppBluetoothViewModel
 import com.ericaskari.w4d5bluetooth.bluetoothsearch.AppBluetoothSearch
@@ -36,6 +37,7 @@ import java.util.Locale
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        this.lifecycle.addObserver((application as MyApplication).initializeAppBluetoothObserver(this))
 
         setContent {
             FirstComposeAppTheme {
@@ -54,12 +56,13 @@ fun ApplicationContent(
     appBluetoothSearchViewModel: AppBluetoothSearchViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val isScanning = appBluetoothViewModel.isScanning.collectAsState()
-    val scannerMessage = appBluetoothViewModel.scannerMessage.collectAsState()
     val allItemsStream = appBluetoothSearchViewModel.allItemsStream.collectAsState(emptyList())
+    val bluetoothAdapterState = appBluetoothViewModel.bluetoothAdapterState.collectAsState(0)
 //    val services = wikiViewModel._services.collectAsState()
 
     Column {
         Text(text = "isScanning: ${isScanning.value}")
+        Text(text = "bluetoothAdapterState: ${bluetoothAdapterState.value}")
         Row {
             Button(onClick = { appBluetoothViewModel.startScan() }) {
                 Text(text = "Start Scan")
@@ -125,3 +128,4 @@ fun GreetingPreview() {
         Greeting("Android")
     }
 }
+
