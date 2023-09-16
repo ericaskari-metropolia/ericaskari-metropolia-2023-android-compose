@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothManager
 import androidx.activity.ComponentActivity
 import com.ericaskari.w4d5bluetooth.application.data.AppContainer
 import com.ericaskari.w4d5bluetooth.application.data.AppDataContainer
+import com.ericaskari.w4d5bluetooth.bluetooth.AppBluetoothGattService
 import com.ericaskari.w4d5bluetooth.bluetooth.AppBluetoothManager
 import com.ericaskari.w4d5bluetooth.bluetooth.AppBluetoothObserver
 import kotlinx.coroutines.CoroutineScope
@@ -29,6 +30,7 @@ class MyApplication : Application() {
     lateinit var appBluetoothManager: AppBluetoothManager
     lateinit var container: AppContainer
     lateinit var appBluetoothObserver: AppBluetoothObserver;
+    lateinit var appBluetoothGattService: AppBluetoothGattService;
 
     override fun onCreate() {
         super.onCreate()
@@ -39,6 +41,11 @@ class MyApplication : Application() {
             bluetoothAdapter = bluetoothAdapter,
             scope = coroutineScope,
             appBluetoothSearchRepository = container.appBluetoothSearchRepository
+        )
+        appBluetoothGattService = AppBluetoothGattService(
+            btAdapter = bluetoothAdapter,
+            scope = coroutineScope,
+            app = this
         )
     }
 

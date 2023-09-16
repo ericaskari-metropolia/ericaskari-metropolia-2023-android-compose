@@ -26,7 +26,7 @@ interface AppBluetoothSearchDao {
     @Query("SELECT * from AppBluetoothSearch WHERE address = :address")
     fun getItem(address: String): Flow<AppBluetoothSearch>
 
-    @Query("SELECT * from AppBluetoothSearch ORDER BY address ASC")
+    @Query("SELECT * from AppBluetoothSearch ORDER BY deviceName DESC")
     fun getAllItems(): Flow<List<AppBluetoothSearch>>
 
 }

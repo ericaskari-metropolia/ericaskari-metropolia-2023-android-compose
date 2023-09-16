@@ -27,6 +27,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ericaskari.w4d5bluetooth.application.MyApplication
 import com.ericaskari.w4d5bluetooth.application.data.AppViewModelProvider
 import com.ericaskari.w4d5bluetooth.bluetooth.AppBluetoothViewModel
+import com.ericaskari.w4d5bluetooth.bluetoothconnect.AppBluetoothConnectViewModel
 import com.ericaskari.w4d5bluetooth.bluetoothsearch.AppBluetoothSearch
 import com.ericaskari.w4d5bluetooth.bluetoothsearch.AppBluetoothSearchViewModel
 import com.ericaskari.w4d5bluetooth.ui.theme.FirstComposeAppTheme
@@ -53,8 +54,10 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun ApplicationContent(
     appBluetoothViewModel: AppBluetoothViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    appBluetoothSearchViewModel: AppBluetoothSearchViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    appBluetoothSearchViewModel: AppBluetoothSearchViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    appBluetoothConnectViewModel: AppBluetoothConnectViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
+
     val isScanning = appBluetoothViewModel.isScanning.collectAsState()
     val allItemsStream = appBluetoothSearchViewModel.allItemsStream.collectAsState(emptyList())
     val bluetoothAdapterState = appBluetoothViewModel.bluetoothAdapterState.collectAsState(0)
@@ -72,7 +75,7 @@ fun ApplicationContent(
             }
         }
         AppBluetoothSearchList(allItemsStream.value) {
-
+            appBluetoothConnectViewModel.connect(it)
         }
     }
 }

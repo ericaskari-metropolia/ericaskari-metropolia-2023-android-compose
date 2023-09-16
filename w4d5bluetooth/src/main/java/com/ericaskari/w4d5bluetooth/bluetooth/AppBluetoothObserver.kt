@@ -15,7 +15,7 @@ import androidx.lifecycle.LifecycleOwner
 import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
- * Main responsibility of this class is to observe Bluetooth status and ask user to turn on bluetooth.
+ * Main responsibility of this class is to observe Bluetooth status stop scan if it turned off.
  */
 class AppBluetoothObserver(
     private val activity: ComponentActivity,
@@ -25,25 +25,11 @@ class AppBluetoothObserver(
     // Adapter State Flow. Updates via broadcastReceiver
     lateinit var bluetoothAdapterState: MutableStateFlow<Int>
 
-    // broadcastReceiver reference. registers onResume and unregisters on onPause lifecycle.
+    // broadcastReceiver reference. It still should be registered in onResume and unregistered on onPause lifecycle.
     private lateinit var broadcastReceiver: BroadcastReceiver
 
     // Intent Launcher. We use it show a popup to user to turn the bluetooth on.
     private lateinit var intentActivityResultLauncher: ActivityResultLauncher<Intent>
-
-    private fun onBluetoothAdapterStateChange(state: Int) {
-        bluetoothAdapterState.value = state
-        if (state == BluetoothAdapter.STATE_OFF) {
-            appBluetoothManager.stopScan()
-            launchEnableBtAdapter()
-        }
-        if (state == BluetoothAdapter.STATE_ON) {
-            println("[BluetoothObserver] btadapter back on...")
-            //delay(300L)
-            //bleManager.scan()
-        }
-
-    }
 
     override fun onCreate(owner: LifecycleOwner) {
         super.onCreate(owner)
@@ -101,12 +87,10 @@ class AppBluetoothObserver(
             println("[BluetoothObserver] broadcastReceiverFactory")
             return object : BroadcastReceiver() {
                 override fun onReceive(context: Context?, intent: Intent) {
-                    val action = intent.action
-
-                    println("[BluetoothObserver] btadapter changed $action")
+                    println("[BluetoothObserver] broadcastReceiver onReceive ${intent.action}")
 
                     // It means the user has changed their bluetooth state.
-                    if (action == BluetoothAdapter.ACTION_STATE_CHANGED) {
+                    if (intent.action == BluetoothAdapter.ACTION_STATE_CHANGED) {
                         onStateChange()
                     }
                 }
@@ -128,4 +112,18 @@ class AppBluetoothObserver(
                 }
             }
     }
+
+    private fun onBluetoothAdapterStateChange(state: Int) {
+        bluetoothAdapterState.value = state
+        if (state == BluetoothAdapter.STATE_OFF) {
+            appBluetoothManager.stopScan()
+        }
+        if (state == BluetoothAdapter.STATE_ON) {
+            println("[BluetoothObserver] btadapter back on...")
+            //delay(300L)
+            //bleManager.scan()
+        }
+
+    }
+
 }
