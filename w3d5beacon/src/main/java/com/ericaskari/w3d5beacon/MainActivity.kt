@@ -14,10 +14,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.ericaskari.w3d5beacon.application.data.AppViewModelProvider
 import com.ericaskari.w3d5beacon.bluetooth.AppBluetoothManager
 import com.ericaskari.w3d5beacon.bluetooth.AppBluetoothObserver
+import com.ericaskari.w3d5beacon.bluetooth.AppMinimalBluetoothViewModel
 import com.ericaskari.w3d5beacon.ui.theme.FirstComposeAppTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -61,20 +65,34 @@ class MainActivity : ComponentActivity() {
             FirstComposeAppTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                    Column {
-                        bluetoothAdapter.value?.let {
-                            Text("Bluetooth is supported")
-                        }
-                        Button(onClick = {
-                            println(bluetoothAdapter.value?.isEnabled)
-
-                        }) {
-                            Text(text = "Check for bluetooth")
-                        }
-                        Greeting("Android")
-                    }
+                    ApplicationContent()
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun ApplicationContent(wikiViewModel: AppMinimalBluetoothViewModel = viewModel(factory = AppViewModelProvider.Factory)) {
+    val isScanning = wikiViewModel.isScanning.collectAsState()
+    val scannerMessage = wikiViewModel.scannerMessage.collectAsState()
+    val bleMessage = wikiViewModel._bleMessage.collectAsState()
+//    val services = wikiViewModel._services.collectAsState()
+
+    Column {
+        Text(text = "isScanning: ${isScanning.value}")
+        Text(text = "scannerMessage: ${scannerMessage.value}")
+        Text(text = "scannerMessage: ${scannerMessage.value}")
+        Text(text = "bleMessage: ${bleMessage.value}")
+//        Text(text = "services: ${services.value}")
+//        Text(text = "getReadBytes: ${wikiViewModel.getReadBytes()}")
+//        Text(text = "getOnOffState: ${wikiViewModel.getOnOffState()}")
+        Greeting("Android")
+        Button(onClick = { wikiViewModel.startScan() }) {
+            Text(text = "Start Scan")
+        }
+        Button(onClick = { wikiViewModel.stopScan() }) {
+            Text(text = "Stop Scan")
         }
     }
 }

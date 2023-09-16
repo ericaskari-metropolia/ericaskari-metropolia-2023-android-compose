@@ -15,9 +15,6 @@ class AppBluetoothManager(
     private val scope: CoroutineScope,
 //    private val parseScanResult: ParseScanResult
 ) {
-
-    private val btScanner = bluetoothAdapter.bluetoothLeScanner
-
     val userMessage = MutableStateFlow<String?>(null)
     val isScanning = MutableStateFlow(false)
 
@@ -26,17 +23,20 @@ class AppBluetoothManager(
     private var lastCleanupTimestamp: Long? = null
     private val CLEANUP_DURATION = 60000L
 
+    //  Configuration for bluetooth scanning
     private val scanSettings = ScanSettings.Builder()
-        .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+        .setScanMode(ScanSettings.SCAN_MODE_BALANCED)
         .build()
 
     private val scanCallback = object : ScanCallback() {
 
         override fun onScanFailed(errorCode: Int) {
             super.onScanFailed(errorCode)
+
             println("[AppBluetoothManager] onScanFailed")
             println("Scan error $errorCode")
-            if (errorCode == 1) {
+
+            if (errorCode == SCAN_FAILED_ALREADY_STARTED) {
                 stopScan()
                 scan()
             }
@@ -44,10 +44,9 @@ class AppBluetoothManager(
 
         @SuppressLint("MissingPermission")
         override fun onScanResult(callbackType: Int, result: ScanResult) {
-            println("[AppBluetoothManager] onScanResult")
             super.onScanResult(callbackType, result)
+            println("[AppBluetoothManager] onScanResult: $result")
 
-            println("scanEnabled: $scanEnabled")
 
             scope.launch {
 //                parseScanResult(result)
@@ -75,19 +74,25 @@ class AppBluetoothManager(
         println("[AppBluetoothManager] scan")
         println("[AppBluetoothManager] scanEnabled:                 $scanEnabled")
         println("[AppBluetoothManager] bluetoothAdapter.isEnabled:  ${bluetoothAdapter.isEnabled}")
+
         try {
-            if (scanEnabled) {
-                if (bluetoothAdapter.isEnabled) {
-                    isScanning.value = true
-                    btScanner?.startScan(null, scanSettings, scanCallback) ?: println("btScanner is null")
-                    lastCleanupTimestamp = System.currentTimeMillis()
-                    println("started scan")
-                } else {
-                    userMessage.value = "You must enable Bluetooth to start scanning."
-                }
+            if (!scanEnabled) {
+                println("[AppBluetoothManager] scanEnabled:                 $scanEnabled")
+                return
             }
+            if (!bluetoothAdapter.isEnabled) {
+                userMessage.value = "You must enable Bluetooth to start scanning."
+                println("[AppBluetoothManager] bluetoothAdapter.isEnabled:  ${bluetoothAdapter.isEnabled}")
+                return
+            }
+
+            isScanning.value = true
+            bluetoothAdapter.bluetoothLeScanner.startScan(null, scanSettings, scanCallback)
+            lastCleanupTimestamp = System.currentTimeMillis()
+            println("started scan")
+
         } catch (e: Exception) {
-            println("START_SCAN")
+            println("scan ERROR")
             println(e)
             println(e.message)
         }
@@ -97,12 +102,17 @@ class AppBluetoothManager(
     fun stopScan() {
         println("[AppBluetoothManager] stopScan")
         try {
-            if (bluetoothAdapter.isEnabled)
-                btScanner.stopScan(scanCallback)
+
+            if (bluetoothAdapter.isEnabled) {
+                bluetoothAdapter.bluetoothLeScanner.stopScan(scanCallback)
+            }
+
         } catch (e: Exception) {
             println(e.message)
+
         } finally {
             isScanning.value = false
+
         }
     }
 
