@@ -1,13 +1,15 @@
 package com.ericaskari.w3d5beacon.bluetoothsearch
 
+import kotlinx.coroutines.flow.Flow
+
 /**
  * Repository that provides insert, update, delete, and retrieve of [Item] from a given data source.
  */
 interface IAppBluetoothSearchRepository {
-//    /**
-//     * Retrieve all the items from the the given data source.
-//     */
-//    fun getAllItemsStream(): Flow<List<SearchResult>>
+    /**
+     * Retrieve all the items from the the given data source.
+     */
+    fun getAllItemsStream(): Flow<List<AppBluetoothSearch>>
 //
 //    /**
 //     * Retrieve an item from the given data source that matches with the [id].

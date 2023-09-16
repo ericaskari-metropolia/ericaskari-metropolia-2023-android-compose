@@ -23,6 +23,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.ericaskari.w3d5beacon.application.MyApplication
 import com.ericaskari.w3d5beacon.bluetooth.AppBluetoothViewModel
+import com.ericaskari.w3d5beacon.bluetoothsearch.AppBluetoothSearchViewModel
 
 /**
  * Provides Factory to create instance of ViewModel for the entire app
@@ -34,11 +35,11 @@ object AppViewModelProvider {
                 appBluetoothManager = MyApplication().appBluetoothManager.value!!,
             )
         }
-//        addInitializer(WikiViewModel::class) {
-//            WikiViewModel(
-//                MyApplication().container.wikiRepository
-//            )
-//        }
+        addInitializer(AppBluetoothSearchViewModel::class) {
+            AppBluetoothSearchViewModel(
+                MyApplication().container.appBluetoothSearchRepository
+            )
+        }
     }
 }
 
