@@ -5,8 +5,8 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
-import com.ericaskari.w4d5bluetooth.bluetoothsearch.AppBluetoothSearch
-import com.ericaskari.w4d5bluetooth.bluetoothsearch.IAppBluetoothSearchRepository
+import com.ericaskari.w4d5bluetooth.bluetoothsearch.BluetoothDevice
+import com.ericaskari.w4d5bluetooth.bluetoothsearch.IBluetoothDeviceRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 class AppBluetoothManager(
     private val bluetoothAdapter: BluetoothAdapter,
     private val scope: CoroutineScope,
-    private val appBluetoothSearchRepository: IAppBluetoothSearchRepository,
+    private val bluetoothDeviceRepository: IBluetoothDeviceRepository,
 ) {
     val isScanning = MutableStateFlow(false)
 
@@ -46,7 +46,7 @@ class AppBluetoothManager(
             println("[AppBluetoothManager] onScanResult: $result")
 
             scope.launch {
-                appBluetoothSearchRepository.insertItem(AppBluetoothSearch.fromScanResult(result))
+                bluetoothDeviceRepository.insertItem(BluetoothDevice.fromScanResult(result))
 
 //                result.scanRecord?.manufacturerSpecificData?.let { mfData ->
 //                    println("[AppBluetoothManager] onScanResult mfData: $mfData")

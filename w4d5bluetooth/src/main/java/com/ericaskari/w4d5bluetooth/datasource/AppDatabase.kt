@@ -8,8 +8,8 @@ import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservice.BluetoothDeviceService
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservice.BluetoothDeviceServiceDao
-import com.ericaskari.w4d5bluetooth.bluetoothsearch.AppBluetoothSearch
-import com.ericaskari.w4d5bluetooth.bluetoothsearch.AppBluetoothSearchDao
+import com.ericaskari.w4d5bluetooth.bluetoothsearch.BluetoothDevice
+import com.ericaskari.w4d5bluetooth.bluetoothsearch.BluetoothDeviceDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -17,10 +17,10 @@ import kotlinx.coroutines.launch
 /**
  * @author Mohammad Askari
  */
-@Database(entities = [AppBluetoothSearch::class, BluetoothDeviceService::class], version = 3, exportSchema = false)
+@Database(entities = [BluetoothDevice::class, BluetoothDeviceService::class], version = 4, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun appBluetoothSearchDao(): AppBluetoothSearchDao
+    abstract fun bluetoothDeviceDao(): BluetoothDeviceDao
     abstract fun bluetoothDeviceServiceDao(): BluetoothDeviceServiceDao
 
     companion object {

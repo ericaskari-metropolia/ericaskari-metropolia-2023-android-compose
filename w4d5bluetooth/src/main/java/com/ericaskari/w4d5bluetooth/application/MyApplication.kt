@@ -40,7 +40,7 @@ class MyApplication : Application() {
         appBluetoothManager = AppBluetoothManager(
             bluetoothAdapter = bluetoothAdapter,
             scope = coroutineScope,
-            appBluetoothSearchRepository = container.appBluetoothSearchRepository
+            bluetoothDeviceRepository = container.bluetoothDeviceRepository
         )
         appBluetoothGattService = AppBluetoothGattService(
             btAdapter = bluetoothAdapter,

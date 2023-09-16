@@ -5,11 +5,11 @@ import kotlinx.coroutines.flow.Flow
 /**
  * Repository that provides insert, update, delete, and retrieve of [Item] from a given data source.
  */
-interface IAppBluetoothSearchRepository {
+interface IBluetoothDeviceRepository {
     /**
      * Retrieve all the items from the the given data source.
      */
-    fun getAllItemsStream(): Flow<List<AppBluetoothSearch>>
+    fun getAllItemsStream(): Flow<List<BluetoothDevice>>
 //
 //    /**
 //     * Retrieve an item from the given data source that matches with the [id].
@@ -19,7 +19,7 @@ interface IAppBluetoothSearchRepository {
     /**
      * Insert item in the data source
      */
-    suspend fun insertItem(item: AppBluetoothSearch)
+    suspend fun insertItem(item: BluetoothDevice)
 
 //    /**
 //     * Insert item in the data source

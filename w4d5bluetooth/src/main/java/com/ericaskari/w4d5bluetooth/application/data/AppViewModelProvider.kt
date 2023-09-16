@@ -25,7 +25,7 @@ import com.ericaskari.w4d5bluetooth.application.MyApplication
 import com.ericaskari.w4d5bluetooth.bluetooth.AppBluetoothViewModel
 import com.ericaskari.w4d5bluetooth.bluetoothconnect.AppBluetoothConnectViewModel
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservice.BluetoothDeviceServiceViewModel
-import com.ericaskari.w4d5bluetooth.bluetoothsearch.AppBluetoothSearchViewModel
+import com.ericaskari.w4d5bluetooth.bluetoothsearch.BluetoothDeviceViewModel
 
 /**
  * Provides Factory to create instance of ViewModel for the entire app
@@ -38,9 +38,9 @@ object AppViewModelProvider {
                 appBluetoothObserver = MyApplication().appBluetoothObserver,
             )
         }
-        addInitializer(AppBluetoothSearchViewModel::class) {
-            AppBluetoothSearchViewModel(
-                MyApplication().container.appBluetoothSearchRepository
+        addInitializer(BluetoothDeviceViewModel::class) {
+            BluetoothDeviceViewModel(
+                MyApplication().container.bluetoothDeviceRepository
             )
         }
         addInitializer(BluetoothDeviceServiceViewModel::class) {

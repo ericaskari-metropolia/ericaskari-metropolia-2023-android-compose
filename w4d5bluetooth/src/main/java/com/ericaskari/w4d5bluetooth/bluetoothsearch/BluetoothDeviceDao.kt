@@ -10,9 +10,9 @@ import kotlinx.coroutines.flow.Flow
  * @author Mohammad Askari
  */
 @Dao
-interface AppBluetoothSearchDao {
+interface BluetoothDeviceDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(item: AppBluetoothSearch)
+    suspend fun insert(item: BluetoothDevice)
 //
 //    @Insert(onConflict = OnConflictStrategy.IGNORE)
 //    suspend fun insertItems(vararg items: Movie)
@@ -23,10 +23,10 @@ interface AppBluetoothSearchDao {
 //    @Delete
 //    suspend fun delete(item: Movie)
 
-    @Query("SELECT * from AppBluetoothSearch WHERE address = :address")
-    fun getItem(address: String): Flow<AppBluetoothSearch>
+    @Query("SELECT * from BluetoothDevice WHERE address = :address")
+    fun getItem(address: String): Flow<BluetoothDevice>
 
-    @Query("SELECT * from AppBluetoothSearch ORDER BY deviceName DESC")
-    fun getAllItems(): Flow<List<AppBluetoothSearch>>
+    @Query("SELECT * from BluetoothDevice ORDER BY deviceName DESC")
+    fun getAllItems(): Flow<List<BluetoothDevice>>
 
 }

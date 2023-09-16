@@ -28,8 +28,8 @@ import com.ericaskari.w4d5bluetooth.application.MyApplication
 import com.ericaskari.w4d5bluetooth.application.data.AppViewModelProvider
 import com.ericaskari.w4d5bluetooth.bluetooth.AppBluetoothViewModel
 import com.ericaskari.w4d5bluetooth.bluetoothconnect.AppBluetoothConnectViewModel
-import com.ericaskari.w4d5bluetooth.bluetoothsearch.AppBluetoothSearch
-import com.ericaskari.w4d5bluetooth.bluetoothsearch.AppBluetoothSearchViewModel
+import com.ericaskari.w4d5bluetooth.bluetoothsearch.BluetoothDevice
+import com.ericaskari.w4d5bluetooth.bluetoothsearch.BluetoothDeviceViewModel
 import com.ericaskari.w4d5bluetooth.ui.theme.FirstComposeAppTheme
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -54,12 +54,12 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun ApplicationContent(
     appBluetoothViewModel: AppBluetoothViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    appBluetoothSearchViewModel: AppBluetoothSearchViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    bluetoothDeviceViewModel: BluetoothDeviceViewModel = viewModel(factory = AppViewModelProvider.Factory),
     appBluetoothConnectViewModel: AppBluetoothConnectViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
 
     val isScanning = appBluetoothViewModel.isScanning.collectAsState()
-    val allItemsStream = appBluetoothSearchViewModel.allItemsStream.collectAsState(emptyList())
+    val allItemsStream = bluetoothDeviceViewModel.allItemsStream.collectAsState(emptyList())
     val bluetoothAdapterState = appBluetoothViewModel.bluetoothAdapterState.collectAsState(0)
 //    val services = wikiViewModel._services.collectAsState()
 
@@ -74,20 +74,20 @@ fun ApplicationContent(
                 Text(text = "Stop Scan")
             }
         }
-        AppBluetoothSearchList(allItemsStream.value) {
+        AppBluetoothDeviceList(allItemsStream.value) {
             appBluetoothConnectViewModel.connect(it)
         }
     }
 }
 
 @Composable
-fun AppBluetoothSearchList(data: List<AppBluetoothSearch>, modifier: Modifier = Modifier, onClick: (id: String) -> Unit) {
+fun AppBluetoothDeviceList(data: List<BluetoothDevice>, modifier: Modifier = Modifier, onClick: (id: String) -> Unit) {
     LazyColumn(
         modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(1.dp),
     ) {
         items(data) {
-            AppBluetoothSearchListItem(data = it) { id ->
+            AppBluetoothDeviceListItem(data = it) { id ->
                 onClick(id)
             }
         }
@@ -97,7 +97,7 @@ fun AppBluetoothSearchList(data: List<AppBluetoothSearch>, modifier: Modifier = 
 
 
 @Composable
-fun AppBluetoothSearchListItem(data: AppBluetoothSearch, onClick: (id: String) -> Unit) {
+fun AppBluetoothDeviceListItem(data: BluetoothDevice, onClick: (id: String) -> Unit) {
     ListItem(
         modifier = Modifier
             .clickable { onClick(data.address) },

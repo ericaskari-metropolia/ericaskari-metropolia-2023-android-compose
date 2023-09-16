@@ -9,7 +9,7 @@ import androidx.room.PrimaryKey
 import java.util.concurrent.TimeUnit
 
 @Entity
-data class AppBluetoothSearch(
+data class BluetoothDevice(
     @PrimaryKey val address: String,
     @ColumnInfo val deviceName: String?,
     @ColumnInfo val rssi: Int,
@@ -19,8 +19,8 @@ data class AppBluetoothSearch(
 
     companion object {
         @SuppressLint("MissingPermission")
-        fun fromScanResult(searchResult: ScanResult): AppBluetoothSearch {
-            return AppBluetoothSearch(
+        fun fromScanResult(searchResult: ScanResult): BluetoothDevice {
+            return BluetoothDevice(
                 address = searchResult.device.address,
                 deviceName = searchResult.device.name,
                 rssi = searchResult.rssi,
