@@ -24,6 +24,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.ericaskari.w4d5bluetooth.application.MyApplication
 import com.ericaskari.w4d5bluetooth.bluetooth.AppBluetoothViewModel
 import com.ericaskari.w4d5bluetooth.bluetoothconnect.AppBluetoothConnectViewModel
+import com.ericaskari.w4d5bluetooth.bluetoothdeviceservice.BluetoothDeviceServiceViewModel
 import com.ericaskari.w4d5bluetooth.bluetoothsearch.AppBluetoothSearchViewModel
 
 /**
@@ -40,6 +41,11 @@ object AppViewModelProvider {
         addInitializer(AppBluetoothSearchViewModel::class) {
             AppBluetoothSearchViewModel(
                 MyApplication().container.appBluetoothSearchRepository
+            )
+        }
+        addInitializer(BluetoothDeviceServiceViewModel::class) {
+            BluetoothDeviceServiceViewModel(
+                MyApplication().container.bluetoothDeviceServiceRepository
             )
         }
         addInitializer(AppBluetoothConnectViewModel::class) {
