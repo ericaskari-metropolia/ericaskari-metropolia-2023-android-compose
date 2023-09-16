@@ -7,8 +7,12 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
+import android.bluetooth.BluetoothGattService
 import android.os.Build
-import com.ericaskari.w4d5bluetooth.bluetoothdeviceservice.BluetoothDeviceService
+import com.ericaskari.w4d5bluetooth.bluetooth.models.CharacteristicDescriptorPermission
+import com.ericaskari.w4d5bluetooth.bluetooth.models.CharacteristicProperty
+import com.ericaskari.w4d5bluetooth.bluetooth.models.CharacteristicWriteType
+import com.ericaskari.w4d5bluetooth.bluetooth.models.CharacteristicsInfo
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservice.IBluetoothDeviceServiceRepository
 import com.ericaskari.w4d5bluetooth.bluetoothsearch.IBluetoothDeviceRepository
 import com.ericaskari.w4d5bluetooth.enums.ConnectionState
@@ -16,82 +20,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
-enum class BleProperties(val value: Int) {
-    PROPERTY_BROADCAST(1),
-    PROPERTY_EXTENDED_PROPS(128),
-    PROPERTY_INDICATE(32),
-    PROPERTY_NOTIFY(16),
-    PROPERTY_READ(2),
-    PROPERTY_SIGNED_WRITE(64),
-    PROPERTY_WRITE(8),
-    PROPERTY_WRITE_NO_RESPONSE(4);
-
-    companion object {
-
-        fun getAllProperties(bleValue: Int): List<BleProperties> {
-            var propertyList = mutableListOf<BleProperties>()
-
-            values().forEach {
-                if (bleValue and it.value > 0)
-                    propertyList.add(it)
-            }
-            return propertyList
-
-        }
-    }
-}
-
-enum class BleWriteTypes(val value: Int) {
-    WRITE_TYPE_DEFAULT(2),
-    WRITE_TYPE_NO_RESPONSE(1),
-    WRITE_TYPE_SIGNED(4);
-
-    companion object {
-
-        fun getAllTypes(bleValue: Int): List<BleWriteTypes> {
-            var propertyList = mutableListOf<BleWriteTypes>()
-
-            values().forEach {
-                if (bleValue and it.value > 0)
-                    propertyList.add(it)
-            }
-            return propertyList
-
-        }
-    }
-}
-
-enum class BlePermissions(val value: Int) {
-    PERMISSION_READ(1),
-    PERMISSION_READ_ENCRYPTED(2),
-    PERMISSION_READ_ENCRYPTED_MITM(4),
-    PERMISSION_WRITE(16),
-    PERMISSION_WRITE_ENCRYPTED(32),
-    PERMISSION_WRITE_ENCRYPTED_MITM(64),
-    PERMISSION_WRITE_SIGNED(128),
-    PERMISSION_WRITE_SIGNED_MITM(256);
-
-    companion object {
-
-        fun getAllPermissions(bleValue: Int): List<BlePermissions> {
-            var propertyList = mutableListOf<BlePermissions>()
-
-            values().forEach {
-                if (bleValue and it.value > 0)
-                    propertyList.add(it)
-            }
-            return propertyList
-
-        }
-    }
-}
 
 data class DeviceDescriptor(
     val uuid: String,
     val name: String,
     val charUuid: String,
-    val permissions: List<BlePermissions>,
-    val notificationProperty: BleProperties?,
+    val permissions: List<CharacteristicDescriptorPermission>,
+    val notificationProperty: CharacteristicProperty?,
     val readBytes: ByteArray?
 ) {
     override fun equals(other: Any?): Boolean {
@@ -130,8 +65,8 @@ data class DeviceCharacteristics(
     val name: String,
     val descriptor: String?,
     val permissions: Int,
-    val properties: List<BleProperties>,
-    val writeTypes: List<BleWriteTypes>,
+    val properties: List<CharacteristicProperty>,
+    val writeTypes: List<CharacteristicWriteType>,
     val descriptors: List<DeviceDescriptor>,
     val canRead: Boolean,
     val canWrite: Boolean,
@@ -207,7 +142,33 @@ class AppBluetoothGattService(
             connectMessage.value = connectionState
             println("connectionState: $connectionState")
         },
-        enableNotificationsAndIndications = {
+        onServicesDiscovered = {
+            it.entries.forEach { serviceAndCharacteristicsMap ->
+                val service = serviceAndCharacteristicsMap.key
+                val characteristicsMap = serviceAndCharacteristicsMap.value
+
+                println("Service:         ${service.uuid}")
+
+                characteristicsMap.entries.forEach { characteristicsAndInfoMap ->
+                    val characteristic = characteristicsAndInfoMap.key
+                    val characteristicInfoMap = characteristicsAndInfoMap.value
+
+                    val permissions = characteristicInfoMap.permissions
+                    val properties = characteristicInfoMap.properties
+
+                    println("characteristics: ${characteristic.uuid} permissions: ${permissions} properties: ${properties}")
+
+                    characteristicInfoMap.descriptors.entries.forEach { characteristicAndDescriptorMap ->
+                        val descriptor = characteristicAndDescriptorMap.key
+                        val descriptorPermissionList = characteristicAndDescriptorMap.value
+
+                        println("descriptor:      ${descriptor.uuid} descriptorPermissionList: ${descriptorPermissionList}")
+
+                    }
+
+                }
+            }
+
             scope.launch {
                 enableNotificationsAndIndications()
             }
@@ -339,10 +300,11 @@ class AppBluetoothGattService(
 
     companion object {
 
+
         private fun appBluetoothGattCallbackFactory(
             scope: CoroutineScope,
             onConnectionStateChange: (gatt: BluetoothGatt, connectionState: ConnectionState) -> Unit,
-            enableNotificationsAndIndications: () -> Unit
+            onServicesDiscovered: (result: Map<BluetoothGattService, Map<BluetoothGattCharacteristic, CharacteristicsInfo>>) -> Unit,
         ): BluetoothGattCallback {
 
             return object : BluetoothGattCallback() {
@@ -369,31 +331,42 @@ class AppBluetoothGattService(
                         return
                     }
                     scope.launch {
-                        // deviceDetails.value = emptyList()
                         println(gatt)
 
-                        var serviceItems =
-                            gatt.services.map {
-                                BluetoothDeviceService(it.uuid.toString(), gatt.device.address)
+                        val output: Map<BluetoothGattService, Map<BluetoothGattCharacteristic, CharacteristicsInfo>> =
+                            gatt.services.fold(mutableMapOf()) servicesFold@{ servicesMap, service ->
+                                val characteristics = service.characteristics
+
+                                val infoListFolded: Map<BluetoothGattCharacteristic, CharacteristicsInfo> =
+                                    characteristics.fold(mutableMapOf()) characteristicsFold@{ mapVal, characteristic ->
+                                        val permissions = characteristic.permissions
+                                        val properties = CharacteristicProperty.getAll(characteristic.properties)
+                                        val writeTypes = CharacteristicWriteType.getAll(characteristic.writeType)
+
+                                        val descriptors = characteristic.descriptors.fold(
+                                            mutableMapOf<BluetoothGattDescriptor, List<CharacteristicDescriptorPermission>>()
+                                        ) descriptorFold@{ descriptorMap, descriptor ->
+
+                                            descriptorMap[descriptor] = CharacteristicDescriptorPermission.getAll(descriptor.permissions)
+                                            return@descriptorFold descriptorMap
+                                        }
+                                        val info = CharacteristicsInfo(
+                                            permissions = permissions,
+                                            properties = properties,
+                                            writeTypes = writeTypes,
+                                            descriptors = descriptors
+                                        )
+                                        mapVal[characteristic] = info
+
+                                        return@characteristicsFold mapVal
+                                    }
+
+                                servicesMap[service] = infoListFolded
+
+                                return@servicesFold servicesMap
                             }
 
-
-                        gatt.services?.forEach { service ->
-                            println("Service: ${service.uuid}")
-
-
-                            service.characteristics.forEach { char ->
-                                val permissions = char.permissions
-                                println("Service: ${service.uuid} characteristics: ${char.uuid} permissions: $permissions")
-
-                                char.descriptors.forEach { descriptor ->
-                                    println("Service: ${service.uuid} characteristics: ${char.uuid} permissions: $permissions descriptor: ${descriptor.uuid}")
-                                }
-                            }
-                        }
-
-                        // deviceDetails.value = parseService(it, status)
-                        enableNotificationsAndIndications()
+                        onServicesDiscovered(output)
                     }
                 }
 
