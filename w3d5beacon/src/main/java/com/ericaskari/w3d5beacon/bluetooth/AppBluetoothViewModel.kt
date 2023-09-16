@@ -4,14 +4,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 
-class AppMinimalBluetoothViewModel(
+class AppBluetoothViewModel(
     private val appBluetoothManager: AppBluetoothManager,
-    private val appBluetoothGatt: AppBluetoothGatt,
 
     ) : ViewModel() {
     val isScanning by mutableStateOf(appBluetoothManager.isScanning)
     val scannerMessage = appBluetoothManager.userMessage
-    val _bleMessage = appBluetoothGatt.connectMessage
 
 
     fun startScan() {

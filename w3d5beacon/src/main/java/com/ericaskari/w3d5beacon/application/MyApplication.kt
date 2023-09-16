@@ -5,7 +5,6 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import com.ericaskari.w3d5beacon.application.data.AppContainer
 import com.ericaskari.w3d5beacon.application.data.AppDataContainer
-import com.ericaskari.w3d5beacon.bluetooth.AppBluetoothGatt
 import com.ericaskari.w3d5beacon.bluetooth.AppBluetoothManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,16 +27,10 @@ class MyApplication : Application() {
         bluetoothAdapter.value?.let {
             AppBluetoothManager(
                 bluetoothAdapter = it,
-                scope = coroutineScope
+                scope = coroutineScope,
+                appBluetoothSearchRepository = container.appBluetoothSearchRepository
             )
         }
-    }
-    val appBluetoothGatt: Lazy<AppBluetoothGatt> = lazy {
-        AppBluetoothGatt(
-            app = this,
-            btAdapter = this.bluetoothAdapter.value!!,
-            scope = coroutineScope,
-        )
     }
 
     override fun onCreate() {

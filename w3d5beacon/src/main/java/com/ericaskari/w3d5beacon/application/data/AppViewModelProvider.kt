@@ -22,7 +22,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.ericaskari.w3d5beacon.application.MyApplication
-import com.ericaskari.w3d5beacon.bluetooth.AppMinimalBluetoothViewModel
+import com.ericaskari.w3d5beacon.bluetooth.AppBluetoothViewModel
 
 /**
  * Provides Factory to create instance of ViewModel for the entire app
@@ -30,9 +30,8 @@ import com.ericaskari.w3d5beacon.bluetooth.AppMinimalBluetoothViewModel
 object AppViewModelProvider {
     val Factory = viewModelFactory {
         initializer {
-            AppMinimalBluetoothViewModel(
+            AppBluetoothViewModel(
                 appBluetoothManager = MyApplication().appBluetoothManager.value!!,
-                appBluetoothGatt = MyApplication().appBluetoothGatt.value
             )
         }
 //        addInitializer(WikiViewModel::class) {

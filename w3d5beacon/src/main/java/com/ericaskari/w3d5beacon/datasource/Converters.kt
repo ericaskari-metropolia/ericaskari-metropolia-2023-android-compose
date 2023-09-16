@@ -2,6 +2,7 @@ package com.ericaskari.w3d5beacon.datasource
 
 import androidx.room.TypeConverter
 import java.util.Date
+import java.util.UUID
 
 
 /**
@@ -22,4 +23,15 @@ class Converters {
     fun dateToTimestamp(date: Date?): Long? {
         return date?.time
     }
+
+    @TypeConverter
+    fun fromUUID(uuid: UUID): String {
+        return uuid.toString()
+    }
+
+    @TypeConverter
+    fun uuidFromString(string: String?): UUID {
+        return UUID.fromString(string)
+    }
+
 }

@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 /**
  * @author Mohammad Askari
  */
-@Database(entities = [AppBluetoothSearch::class], version = 1, exportSchema = false)
+@Database(entities = [AppBluetoothSearch::class], version = 2, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun appBluetoothSearchDao(): AppBluetoothSearchDao

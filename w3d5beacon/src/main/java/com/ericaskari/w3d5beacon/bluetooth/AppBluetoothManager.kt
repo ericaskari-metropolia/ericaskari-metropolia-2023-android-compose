@@ -5,14 +5,16 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
+import com.ericaskari.w3d5beacon.bluetoothsearch.AppBluetoothSearch
+import com.ericaskari.w3d5beacon.bluetoothsearch.IAppBluetoothSearchRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 class AppBluetoothManager(
     private val bluetoothAdapter: BluetoothAdapter,
-//    private val bleRepository: IBleRepository,
     private val scope: CoroutineScope,
+    private val appBluetoothSearchRepository: IAppBluetoothSearchRepository,
 //    private val parseScanResult: ParseScanResult
 ) {
     val userMessage = MutableStateFlow<String?>(null)
@@ -46,10 +48,17 @@ class AppBluetoothManager(
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
             println("[AppBluetoothManager] onScanResult: $result")
-
+//            appBluetoothSearchRepository.insertItem()
 
             scope.launch {
 //                parseScanResult(result)
+                appBluetoothSearchRepository.insertItem(AppBluetoothSearch.fromScanResult(result))
+                result.scanRecord?.manufacturerSpecificData?.let { mfData ->
+                    println("[AppBluetoothManager] onScanResult mfData: $mfData")
+                }
+
+
+
                 if (isScanning.value)
                     launch { deleteNotSeen() }
             }
