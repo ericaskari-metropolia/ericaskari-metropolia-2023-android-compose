@@ -30,7 +30,7 @@ interface BluetoothDeviceServiceDao {
     @Query("SELECT * from BluetoothDeviceService ORDER BY deviceAddress DESC")
     fun getAllItems(): Flow<List<BluetoothDeviceService>>
 
-    @Query("SELECT * from BluetoothDeviceService WHERE deviceAddress = :deviceAddress ORDER BY id DESC")
-    fun getAllItemsByDeviceAddress(deviceAddress: String): Flow<List<BluetoothDeviceService>>
+    @Query("SELECT * from BluetoothDeviceService WHERE deviceAddress = :id ORDER BY id DESC")
+    fun getAllItemsByDeviceId(id: String): Flow<List<BluetoothDeviceService>>
 
 }

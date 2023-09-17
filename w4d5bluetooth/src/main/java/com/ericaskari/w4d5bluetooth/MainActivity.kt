@@ -28,7 +28,12 @@ import com.ericaskari.w4d5bluetooth.application.MyApplication
 import com.ericaskari.w4d5bluetooth.application.data.AppViewModelProvider
 import com.ericaskari.w4d5bluetooth.bluetooth.AppBluetoothViewModel
 import com.ericaskari.w4d5bluetooth.bluetoothconnect.AppBluetoothConnectViewModel
+import com.ericaskari.w4d5bluetooth.bluetoothdeviceservice.BluetoothDeviceService
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservice.BluetoothDeviceServiceViewModel
+import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristic.BluetoothDeviceServiceCharacteristic
+import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristic.BluetoothDeviceServiceCharacteristicViewModel
+import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristicdescriptor.BluetoothDeviceServiceCharacteristicDescriptor
+import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristicdescriptor.BluetoothDeviceServiceCharacteristicDescriptorViewModel
 import com.ericaskari.w4d5bluetooth.bluetoothsearch.BluetoothDevice
 import com.ericaskari.w4d5bluetooth.bluetoothsearch.BluetoothDeviceViewModel
 import com.ericaskari.w4d5bluetooth.ui.theme.FirstComposeAppTheme
@@ -135,7 +140,7 @@ fun AppBluetoothDeviceListItem(
     data: BluetoothDevice,
     onClick: (id: String) -> Unit
 ) {
-    val services = bluetoothDeviceServiceViewModel.getAllItemsByDeviceAddressStream(data.address).collectAsState(listOf())
+    val services = bluetoothDeviceServiceViewModel.getAllItemsByDeviceId(data.address).collectAsState(listOf())
 
     ListItem(
         modifier = Modifier
@@ -152,20 +157,100 @@ fun AppBluetoothDeviceListItem(
         },
         trailingContent = { data.lastSeen?.let { Text(SimpleDateFormat("MM/dd/yy h:mm:ss ", Locale.US).format(Date(data.lastSeen))) } }
     )
-    ListItem(
-        overlineContent = { Text("Services: ${services.value.map { it.id }}") },
-        headlineContent = { data.deviceName?.let { Text(it) } },
-        supportingContent = { Text(data.rssi.toString() + "dBm") },
-        leadingContent = {
-            Icon(
-                Icons.Filled.AccountCircle,
-                contentDescription = "AccountCircle",
-            )
-        },
-        trailingContent = { data.lastSeen?.let { Text(SimpleDateFormat("MM/dd/yy h:mm:ss ", Locale.US).format(Date(data.lastSeen))) } }
-    )
+    AppBluetoothDeviceServiceList(
+        data = services.value
+    ) {
+
+    }
 }
 
+@Composable
+fun AppBluetoothDeviceServiceList(
+    data: List<BluetoothDeviceService>,
+    modifier: Modifier = Modifier,
+    onClick: (id: String) -> Unit
+) {
+    data.forEach {
+        AppBluetoothDeviceServiceListItem(data = it) { id ->
+        }
+    }
+}
+
+
+@Composable
+fun AppBluetoothDeviceServiceListItem(
+    bluetoothDeviceServiceCharacteristicViewModel: BluetoothDeviceServiceCharacteristicViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    data: BluetoothDeviceService,
+    onClick: (id: String) -> Unit
+) {
+    val characteristic = bluetoothDeviceServiceCharacteristicViewModel.getAllItemsByServiceId(data.id).collectAsState(listOf())
+
+    ListItem(
+        overlineContent = { Text("Service") },
+        headlineContent = { Text(data.id) },
+    )
+    AppBluetoothDeviceServiceCharacteristicList(
+        data = characteristic.value
+    ) {
+
+    }
+}
+
+@Composable
+fun AppBluetoothDeviceServiceCharacteristicList(
+    data: List<BluetoothDeviceServiceCharacteristic>,
+    modifier: Modifier = Modifier,
+    onClick: (id: String) -> Unit
+) {
+    data.forEach {
+        AppBluetoothDeviceServiceCharacteristicListItem(data = it) { id ->
+        }
+    }
+}
+
+@Composable
+fun AppBluetoothDeviceServiceCharacteristicListItem(
+    bluetoothDeviceServiceCharacteristicDescriptorViewModel: BluetoothDeviceServiceCharacteristicDescriptorViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    data: BluetoothDeviceServiceCharacteristic,
+    onClick: (id: String) -> Unit
+) {
+    val descriptors =
+        bluetoothDeviceServiceCharacteristicDescriptorViewModel.getAllItemsByCharacteristicId(data.id).collectAsState(listOf())
+
+    ListItem(
+        overlineContent = { Text("Characteristic") },
+        headlineContent = { Text(data.id) },
+    )
+    AppBluetoothDeviceServiceCharacteristicDescriptorList(
+        data = descriptors.value
+    ) {
+
+    }
+}
+
+@Composable
+fun AppBluetoothDeviceServiceCharacteristicDescriptorList(
+    data: List<BluetoothDeviceServiceCharacteristicDescriptor>,
+    modifier: Modifier = Modifier,
+    onClick: (id: String) -> Unit
+) {
+    data.forEach {
+        AppBluetoothDeviceServiceCharacteristicDescriptorListItem(data = it) { id ->
+        }
+    }
+}
+
+@Composable
+fun AppBluetoothDeviceServiceCharacteristicDescriptorListItem(
+    data: BluetoothDeviceServiceCharacteristicDescriptor,
+    onClick: (id: String) -> Unit
+) {
+
+    ListItem(
+        overlineContent = { Text("Descriptor") },
+        headlineContent = { Text(data.id) },
+    )
+}
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {

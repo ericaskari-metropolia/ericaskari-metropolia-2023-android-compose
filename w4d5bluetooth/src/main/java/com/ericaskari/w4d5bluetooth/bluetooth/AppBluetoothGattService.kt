@@ -62,29 +62,34 @@ class AppBluetoothGattService(
             scope.launch {
                 val serviceList = it.keys.toList().map { BluetoothDeviceService.fromBluetoothGattService(it, btGatt!!.device.address) }
 
-                bluetoothDeviceServiceRepository.syncItems(*serviceList.toTypedArray())
+                bluetoothDeviceServiceRepository.syncItems(btGatt!!.device.address, *serviceList.toTypedArray())
 
-                val characteristicList = btGatt!!.services!!.flatMap { service -> service.characteristics }.map { characteristic ->
-                    BluetoothDeviceServiceCharacteristic.fromBluetoothGattCharacteristic(
-                        characteristic,
-                        characteristic.service.uuid.toString()
-                    )
-                }
-
-                bluetoothDeviceServiceCharacteristicRepository.syncItems(*characteristicList.toTypedArray())
-
-                val descriptorList = btGatt!!.services!!
-                    .flatMap { service -> service.characteristics }
-                    .flatMap { characteristic -> characteristic.descriptors }
-                    .map { descriptor ->
-                        BluetoothDeviceServiceCharacteristicDescriptor.fromBluetoothGattDescriptor(
-                            descriptor,
-                            descriptor.characteristic.uuid.toString()
+                btGatt!!.services.forEach { service ->
+                    val characteristics = service.characteristics.map characteristic@{ characteristic ->
+                        return@characteristic BluetoothDeviceServiceCharacteristic.fromBluetoothGattCharacteristic(
+                            characteristic,
+                            characteristic.service.uuid.toString()
                         )
                     }
 
+                    bluetoothDeviceServiceCharacteristicRepository.syncItems(service.uuid.toString(), *characteristics.toTypedArray())
+                }
 
-                bluetoothDeviceServiceCharacteristicDescriptorRepository.syncItems(*descriptorList.toTypedArray())
+                btGatt!!.services.forEach { service ->
+                    service.characteristics.forEach { characteristic ->
+                        val descriptors = characteristic.descriptors.map descriptors@{ descriptor ->
+                            return@descriptors BluetoothDeviceServiceCharacteristicDescriptor.fromBluetoothGattDescriptor(
+                                descriptor.characteristic.uuid.toString(),
+                                descriptor
+                            )
+                        }
+                        bluetoothDeviceServiceCharacteristicDescriptorRepository.syncItems(
+                            characteristic.uuid.toString(),
+                            *descriptors.toTypedArray()
+                        )
+                    }
+
+                }
             }
 
             it.entries.forEach { serviceAndCharacteristicsMap ->

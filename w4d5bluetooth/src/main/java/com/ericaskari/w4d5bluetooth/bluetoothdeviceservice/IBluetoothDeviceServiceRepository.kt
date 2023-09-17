@@ -10,7 +10,7 @@ interface IBluetoothDeviceServiceRepository {
      * Retrieve all the items from the the given data source.
      */
     fun getAllItemsStream(): Flow<List<BluetoothDeviceService>>
-    fun getAllItemsByDeviceAddressStream(deviceAddress: String): Flow<List<BluetoothDeviceService>>
+    fun getAllItemsByDeviceId(id: String): Flow<List<BluetoothDeviceService>>
 //
 //    /**
 //     * Retrieve an item from the given data source that matches with the [id].
@@ -25,7 +25,7 @@ interface IBluetoothDeviceServiceRepository {
     /**
      * Insert item in the data source
      */
-    suspend fun syncItems(vararg items: BluetoothDeviceService): Flow<List<BluetoothDeviceService>>
+    suspend fun syncItems(deviceId: String, vararg items: BluetoothDeviceService): Flow<List<BluetoothDeviceService>>
 
 //    /**
 //     * Insert item in the data source

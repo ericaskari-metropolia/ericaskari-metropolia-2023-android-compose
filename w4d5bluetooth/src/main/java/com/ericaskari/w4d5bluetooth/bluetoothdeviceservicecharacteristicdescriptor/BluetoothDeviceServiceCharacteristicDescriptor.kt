@@ -13,8 +13,8 @@ data class BluetoothDeviceServiceCharacteristicDescriptor(
 
     companion object {
         fun fromBluetoothGattDescriptor(
+            characteristicId: String,
             item: BluetoothGattDescriptor,
-            characteristicId: String
         ): BluetoothDeviceServiceCharacteristicDescriptor {
             return BluetoothDeviceServiceCharacteristicDescriptor(item.uuid.toString(), characteristicId)
 

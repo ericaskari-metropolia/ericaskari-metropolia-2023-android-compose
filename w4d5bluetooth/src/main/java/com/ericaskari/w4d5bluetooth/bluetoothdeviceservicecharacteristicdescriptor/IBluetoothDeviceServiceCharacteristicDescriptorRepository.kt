@@ -27,6 +27,9 @@ interface IBluetoothDeviceServiceCharacteristicDescriptorRepository {
     /**
      * Insert item in the data source
      */
-    suspend fun syncItems(vararg items: BluetoothDeviceServiceCharacteristicDescriptor): Flow<List<BluetoothDeviceServiceCharacteristicDescriptor>>
+    suspend fun syncItems(
+        characteristicId: String,
+        vararg items: BluetoothDeviceServiceCharacteristicDescriptor
+    ): Flow<List<BluetoothDeviceServiceCharacteristicDescriptor>>
 
 }

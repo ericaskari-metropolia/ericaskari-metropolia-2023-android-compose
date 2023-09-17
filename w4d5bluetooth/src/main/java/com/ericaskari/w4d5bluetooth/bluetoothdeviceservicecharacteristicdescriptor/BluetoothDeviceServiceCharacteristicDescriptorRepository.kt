@@ -15,9 +15,12 @@ class BluetoothDeviceServiceCharacteristicDescriptorRepository(private val itemD
 
     override suspend fun insertItem(item: BluetoothDeviceServiceCharacteristicDescriptor) = itemDao.insert(item)
     override fun getAllItemsStream() = itemDao.getAllItems()
-    override suspend fun syncItems(vararg items: BluetoothDeviceServiceCharacteristicDescriptor): Flow<List<BluetoothDeviceServiceCharacteristicDescriptor>> {
+    override suspend fun syncItems(
+        characteristicId: String,
+        vararg items: BluetoothDeviceServiceCharacteristicDescriptor
+    ): Flow<List<BluetoothDeviceServiceCharacteristicDescriptor>> {
         val itemsIds = items.map { it.id }
-        val allItems = getAllItemsStream()
+        val allItems = getAllItemsByCharacteristicId(characteristicId)
         val list = allItems.first()
 
         val allItemsIds = list.map { it.id }
