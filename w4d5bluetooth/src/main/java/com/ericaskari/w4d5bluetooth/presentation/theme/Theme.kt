@@ -1,4 +1,4 @@
-package com.ericaskari.w4d5bluetooth.ui.theme
+package com.ericaskari.w4d5bluetooth.presentation.theme
 
 import android.app.Activity
 import android.os.Build
