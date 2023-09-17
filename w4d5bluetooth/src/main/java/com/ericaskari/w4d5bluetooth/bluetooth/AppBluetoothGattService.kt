@@ -214,14 +214,13 @@ class AppBluetoothGattService(
                     val descriptorPermissionList = characteristicAndDescriptorMap.value
 
                     if (characteristic.properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY > 0) {
-                        println("$prefix descriptor: ${descriptor.uuid} setValue: ${BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE.decodeToString()}")
-
+                        println("$prefix descriptor: ${descriptor.uuid} setValue: ENABLE_NOTIFICATION_VALUE}")
                         descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
                         btGatt!!.writeDescriptor(descriptor)
                     }
 
                     if (characteristic.properties and BluetoothGattCharacteristic.PROPERTY_INDICATE > 0) {
-                        println("$prefix descriptor: ${descriptor.uuid} setValue: ${BluetoothGattDescriptor.ENABLE_INDICATION_VALUE.decodeToString()}")
+                        println("$prefix descriptor: ${descriptor.uuid} setValue: ENABLE_INDICATION_VALUE")
                         descriptor.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE)
                         btGatt!!.writeDescriptor(descriptor)
                     }
