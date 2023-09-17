@@ -5,6 +5,8 @@ import com.ericaskari.w4d5bluetooth.bluetoothdeviceservice.BluetoothDeviceServic
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservice.IBluetoothDeviceServiceRepository
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristic.BluetoothDeviceServiceCharacteristicRepository
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristic.IBluetoothDeviceServiceCharacteristicRepository
+import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristicdescriptor.BluetoothDeviceServiceCharacteristicDescriptorRepository
+import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristicdescriptor.IBluetoothDeviceServiceCharacteristicDescriptorRepository
 import com.ericaskari.w4d5bluetooth.bluetoothsearch.BluetoothDeviceRepository
 import com.ericaskari.w4d5bluetooth.bluetoothsearch.IBluetoothDeviceRepository
 import com.ericaskari.w4d5bluetooth.datasource.AppDatabase
@@ -17,6 +19,7 @@ interface AppContainer {
     val bluetoothDeviceRepository: IBluetoothDeviceRepository
     val bluetoothDeviceServiceRepository: IBluetoothDeviceServiceRepository
     val bluetoothDeviceServiceCharacteristicRepository: IBluetoothDeviceServiceCharacteristicRepository
+    val bluetoothDeviceServiceCharacteristicDescriptorRepository: IBluetoothDeviceServiceCharacteristicDescriptorRepository
 }
 
 class AppDataContainer(private val context: Context) :
@@ -32,6 +35,12 @@ class AppDataContainer(private val context: Context) :
 
     override val bluetoothDeviceServiceCharacteristicRepository: IBluetoothDeviceServiceCharacteristicRepository by lazy {
         BluetoothDeviceServiceCharacteristicRepository(AppDatabase.getInstance(context).bluetoothDeviceServiceCharacteristicDao())
+    }
+
+    override val bluetoothDeviceServiceCharacteristicDescriptorRepository: IBluetoothDeviceServiceCharacteristicDescriptorRepository by lazy {
+        BluetoothDeviceServiceCharacteristicDescriptorRepository(
+            AppDatabase.getInstance(context).bluetoothDeviceServiceCharacteristicDescriptorDao()
+        )
     }
 
 }

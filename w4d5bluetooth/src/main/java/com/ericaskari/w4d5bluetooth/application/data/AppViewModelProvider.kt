@@ -25,6 +25,8 @@ import com.ericaskari.w4d5bluetooth.application.MyApplication
 import com.ericaskari.w4d5bluetooth.bluetooth.AppBluetoothViewModel
 import com.ericaskari.w4d5bluetooth.bluetoothconnect.AppBluetoothConnectViewModel
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservice.BluetoothDeviceServiceViewModel
+import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristic.BluetoothDeviceServiceCharacteristicViewModel
+import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristicdescriptor.BluetoothDeviceServiceCharacteristicDescriptorViewModel
 import com.ericaskari.w4d5bluetooth.bluetoothsearch.BluetoothDeviceViewModel
 
 /**
@@ -38,6 +40,11 @@ object AppViewModelProvider {
                 appBluetoothObserver = MyApplication().appBluetoothObserver,
             )
         }
+        addInitializer(AppBluetoothConnectViewModel::class) {
+            AppBluetoothConnectViewModel(
+                MyApplication().appBluetoothGattService
+            )
+        }
         addInitializer(BluetoothDeviceViewModel::class) {
             BluetoothDeviceViewModel(
                 MyApplication().container.bluetoothDeviceRepository
@@ -48,9 +55,14 @@ object AppViewModelProvider {
                 MyApplication().container.bluetoothDeviceServiceRepository
             )
         }
-        addInitializer(AppBluetoothConnectViewModel::class) {
-            AppBluetoothConnectViewModel(
-                MyApplication().appBluetoothGattService
+        addInitializer(BluetoothDeviceServiceCharacteristicViewModel::class) {
+            BluetoothDeviceServiceCharacteristicViewModel(
+                MyApplication().container.bluetoothDeviceServiceCharacteristicRepository
+            )
+        }
+        addInitializer(BluetoothDeviceServiceCharacteristicDescriptorViewModel::class) {
+            BluetoothDeviceServiceCharacteristicDescriptorViewModel(
+                MyApplication().container.bluetoothDeviceServiceCharacteristicDescriptorRepository
             )
         }
     }
