@@ -31,11 +31,20 @@ import com.ericaskari.w4d5bluetooth.bluetoothconnect.AppBluetoothConnectViewMode
 import com.ericaskari.w4d5bluetooth.bluetoothsearch.BluetoothDevice
 import com.ericaskari.w4d5bluetooth.bluetoothsearch.BluetoothDeviceViewModel
 import com.ericaskari.w4d5bluetooth.ui.theme.FirstComposeAppTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 class MainActivity : ComponentActivity() {
+    companion object {
+        private val parentJob = Job()
+        private val coroutineScope = CoroutineScope(Dispatchers.Default + parentJob)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         this.lifecycle.addObserver((application as MyApplication).initializeAppBluetoothObserver(this))
@@ -72,6 +81,29 @@ fun ApplicationContent(
             }
             Button(onClick = { appBluetoothViewModel.stopScan() }) {
                 Text(text = "Stop Scan")
+            }
+        }
+        Row {
+            Button(onClick = {
+                CoroutineScope(Dispatchers.IO).launch {
+                    appBluetoothConnectViewModel.readAll()
+                }
+            }) {
+                Text(text = "readAll")
+            }
+            Button(onClick = {
+                CoroutineScope(Dispatchers.IO).launch {
+                    appBluetoothConnectViewModel.readCharacteristic()
+                }
+            }) {
+                Text(text = "readCharacteristic")
+            }
+            Button(onClick = {
+                CoroutineScope(Dispatchers.IO).launch {
+                    appBluetoothConnectViewModel.readDescriptor()
+                }
+            }) {
+                Text(text = "readDescriptor")
             }
         }
         AppBluetoothDeviceList(allItemsStream.value) {
