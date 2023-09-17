@@ -25,6 +25,7 @@ fun DeviceDetailsPage(
     val connectMessage = appBluetoothConnectViewModel.connectMessage.collectAsState("unknown")
 
     Column {
+        Text(text = "DeviceDetailsPage")
         Button(onClick = { appBluetoothConnectViewModel.connect(deviceId!!) }) {
             Text(text = "Connect")
         }

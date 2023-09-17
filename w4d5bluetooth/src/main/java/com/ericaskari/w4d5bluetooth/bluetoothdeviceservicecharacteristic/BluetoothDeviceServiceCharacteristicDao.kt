@@ -20,7 +20,6 @@ interface BluetoothDeviceServiceCharacteristicDao {
 //
 //    @Update
 //    suspend fun update(item: Movie)
-//
     @Delete
     suspend fun deleteItem(item: BluetoothDeviceServiceCharacteristic)
 

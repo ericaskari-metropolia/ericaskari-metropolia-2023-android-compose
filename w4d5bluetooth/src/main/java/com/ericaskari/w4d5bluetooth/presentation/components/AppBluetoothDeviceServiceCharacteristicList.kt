@@ -2,6 +2,7 @@ package com.ericaskari.w4d5bluetooth.presentation.components
 
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -46,6 +47,8 @@ fun AppBluetoothDeviceServiceCharacteristicList(
                     .collectAsState(listOf())
 
             ListItem(
+                modifier = Modifier
+                    .clickable { onClick(characteristic.id) },
                 overlineContent = { Text("Characteristic") },
                 headlineContent = { Text(characteristic.id) },
                 supportingContent = {
@@ -91,12 +94,7 @@ fun AppBluetoothDeviceServiceCharacteristicList(
 
 
                         Text("descriptors:")
-                        AppBluetoothDeviceServiceCharacteristicDescriptorList(
-                            data = descriptors.value,
-                            characteristic = characteristic
-                        ) {
 
-                        }
                     }
                 },
             )

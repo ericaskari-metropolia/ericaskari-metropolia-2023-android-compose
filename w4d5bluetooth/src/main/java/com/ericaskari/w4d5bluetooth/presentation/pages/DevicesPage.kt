@@ -49,6 +49,7 @@ fun DevicesPage(
             })
 
     Column {
+        Text(text = "DevicesPage")
         Text(text = "isScanning: ${isScanning.value}")
         Text(text = "bluetoothAdapterState: ${bluetoothAdapterState.value}")
         Column {

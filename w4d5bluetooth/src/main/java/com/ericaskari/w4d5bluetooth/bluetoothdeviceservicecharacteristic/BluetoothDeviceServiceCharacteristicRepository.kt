@@ -12,6 +12,8 @@ class BluetoothDeviceServiceCharacteristicRepository(private val itemDao: Blueto
 
     override suspend fun deleteItem(item: BluetoothDeviceServiceCharacteristic) = itemDao.deleteItem(item)
     override suspend fun insertItem(item: BluetoothDeviceServiceCharacteristic) = itemDao.insert(item)
+    override fun getItemStream(id: String) = itemDao.getItem(id)
+
     override fun getAllItemsStream() = itemDao.getAllItems()
     override fun getAllItemsByServiceId(id: String) = itemDao.getAllItemsByServiceId(id)
 
