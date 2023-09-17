@@ -47,9 +47,7 @@ class AppBluetoothGattService(
     private var btGatt: BluetoothGatt? = null
 
     val connectMessage = MutableStateFlow(ConnectionState.DISCONNECTED)
-
     private val bluetoothGattCallback = appBluetoothGattCallbackFactory(
-        scope = scope,
         onConnectionStateChange = { gatt, connectionState ->
             btGatt = gatt
             val prefix = "[AppBluetoothGattService][onConnectionStateChange]"
@@ -119,6 +117,62 @@ class AppBluetoothGattService(
             scope.launch {
                 enableNotificationsAndIndications()
             }
+        },
+        onCharacteristicChanged = { gatt, characteristic, value ->
+            btGatt = gatt
+            val prefix = "[AppBluetoothGattService][onCharacteristicChanged]"
+            println(prefix)
+            println("$prefix ${value.print()}")
+
+            val bpm = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, 1)
+            println("$prefix BPM: $bpm")
+        },
+        onCharacteristicRead = { gatt, characteristic, value, status ->
+            val prefix = "[AppBluetoothGattService][onCharacteristicRead]"
+            println(prefix)
+            println("$prefix ${characteristic.uuid}, $status [${GattState.fromState(status)}] ${value.print()}")
+            println("$prefix decodeToString          ${characteristic.value.decodeToString()}")
+            println("$prefix toHex                   ${characteristic.value.toHex()}")
+            println("$prefix decodeSkipUnreadable    ${characteristic.value.decodeSkipUnreadable("$prefix ")}")
+            println("$prefix print                   ${characteristic.value.print()}")
+            println("$prefix bitsToHex               ${characteristic.value.bitsToHex("$prefix  ")}")
+            println("$prefix bits                    ${characteristic.value.bits()}")
+            println("$prefix toBinaryString          ${characteristic.value.toBinaryString()}")
+        },
+        onDescriptorRead = { gatt: BluetoothGatt, descriptor: BluetoothGattDescriptor, status: Int, value: ByteArray ->
+
+            val prefix = "[AppBluetoothGattService][bluetoothGattCallback][onDescriptorRead][old]"
+            println(prefix)
+            println(
+                "$prefix descriptor read:        ${descriptor.uuid}, ${descriptor.characteristic.uuid}, $status [${
+                    GattState.fromState(
+                        status
+                    )
+                }]"
+            )
+            println("$prefix descriptor read:        ${descriptor.uuid}, $status")
+            println("$prefix decodeToString          ${descriptor.value.decodeToString()}")
+            println("$prefix toHex                   ${descriptor.value.toHex()}")
+            println("$prefix decodeSkipUnreadable    ${descriptor.value.decodeSkipUnreadable("$prefix ")}")
+            println("$prefix print                   ${descriptor.value.print()}")
+            println("$prefix bitsToHex               ${descriptor.value.bitsToHex("$prefix ")}")
+            println("$prefix bits                    ${descriptor.value.bits()}")
+            println("$prefix toBinaryString          ${descriptor.value.toBinaryString()}")
+
+        },
+        onCharacteristicWrite = { gatt, characteristic, status ->
+
+            val prefix = "[AppBluetoothGattService][bluetoothGattCallback][onCharacteristicWrite]"
+            println(prefix)
+            println("$prefix ${characteristic.uuid}, $status [${GattState.fromState(status).toString()}]")
+
+        },
+        onDescriptorWrite = { gatt, descriptor, status ->
+
+            val prefix = "[AppBluetoothGattService][bluetoothGattCallback][onDescriptorWrite]"
+            println(prefix)
+            println("$prefix ${descriptor.uuid}, $status [${GattState.fromState(status).toString()}]")
+
         }
     )
 
@@ -137,17 +191,20 @@ class AppBluetoothGattService(
             service.characteristics.forEach { characteristic ->
 
                 val configDescriptor = characteristic.descriptors.find {
-                    it.uuid.toString().equals("00002902-0000-1000-8000-00805f9b34fb", ignoreCase = true)
+                    it.uuid.toString().equals(CLIENT_CHARACTERISTIC_CONFIG_UUID, ignoreCase = true)
                 }
                 configDescriptor?.let {
                     val notifyRegistered = btGatt?.setCharacteristicNotification(characteristic, true)
                     println("$prefix notifyRegistered: $notifyRegistered")
                     if (characteristic.properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY > 0) {
+                        println("$prefix characteristic: ${characteristic.uuid} descriptor: ${it.uuid} >> ENABLE_NOTIFICATION_VALUE")
+
                         it.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
                         btGatt?.writeDescriptor(it)
                     }
 
                     if (characteristic.properties and BluetoothGattCharacteristic.PROPERTY_INDICATE > 0) {
+                        println("$prefix characteristic: ${characteristic.uuid} descriptor: ${it.uuid} >> ENABLE_INDICATION_VALUE")
                         it.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE)
                         btGatt?.writeDescriptor(it)
                     }
@@ -335,12 +392,17 @@ class AppBluetoothGattService(
     }
 
     companion object {
+        const val CLIENT_CHARACTERISTIC_CONFIG_UUID = "00002902-0000-1000-8000-00805f9b34fb"
 
 
         private fun appBluetoothGattCallbackFactory(
-            scope: CoroutineScope,
             onConnectionStateChange: (gatt: BluetoothGatt, connectionState: ConnectionState) -> Unit,
             onServicesDiscovered: (gatt: BluetoothGatt) -> Unit,
+            onCharacteristicChanged: (gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray) -> Unit,
+            onCharacteristicRead: (gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray, status: Int) -> Unit,
+            onDescriptorRead: (gatt: BluetoothGatt, descriptor: BluetoothGattDescriptor, status: Int, value: ByteArray) -> Unit,
+            onCharacteristicWrite: (gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int) -> Unit,
+            onDescriptorWrite: (gatt: BluetoothGatt?, descriptor: BluetoothGattDescriptor, status: Int) -> Unit
         ): BluetoothGattCallback {
 
             return object : BluetoothGattCallback() {
@@ -362,10 +424,6 @@ class AppBluetoothGattService(
 
                 override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
                     super.onServicesDiscovered(gatt, status)
-                    val prefix = "[AppBluetoothGattService][bluetoothGattCallback][onServicesDiscovered]"
-                    println(prefix)
-                    println("$prefix status: $status [${GattState.fromState(status).toString()}] ")
-
                     onServicesDiscovered(gatt)
                 }
 
@@ -376,10 +434,7 @@ class AppBluetoothGattService(
                     status: Int
                 ) {
                     super.onCharacteristicRead(gatt, characteristic, value, status)
-                    val prefix = "[AppBluetoothGattService][bluetoothGattCallback][onCharacteristicRead][4]"
-                    println(prefix)
-                    println("$prefix ${characteristic.uuid}, $status [${GattState.fromState(status).toString()}] ${value.print()}")
-                    // deviceDetails.value = parseRead(deviceDetails.value, characteristic, status)
+                    onCharacteristicRead(gatt, characteristic, value, status)
                 }
 
                 @Deprecated("Deprecated in Java")
@@ -389,27 +444,16 @@ class AppBluetoothGattService(
                     status: Int
                 ) {
                     super.onCharacteristicRead(gatt, characteristic, status)
-                    val prefix = "[AppBluetoothGattService][bluetoothGattCallback][onCharacteristicRead][3]"
-                    println(prefix)
-                    println("$prefix ${characteristic.uuid}, $status [${GattState.fromState(status).toString()}]")
-                    println("$prefix decodeToString          ${characteristic.value.decodeToString()}")
-                    println("$prefix toHex                   ${characteristic.value.toHex()}")
-                    println("$prefix decodeSkipUnreadable    ${characteristic.value.decodeSkipUnreadable("$prefix ")}")
-                    println("$prefix print                   ${characteristic.value.print()}")
-                    println("$prefix bitsToHex               ${characteristic.value.bitsToHex("$prefix  ")}")
-                    println("$prefix bits                    ${characteristic.value.bits()}")
-                    println("$prefix toBinaryString          ${characteristic.value.toBinaryString()}")
+                    onCharacteristicRead(gatt, characteristic, characteristic.value, status)
                 }
 
                 @Deprecated("Deprecated in Java")
                 override fun onCharacteristicChanged(
-                    gatt: BluetoothGatt?,
+                    gatt: BluetoothGatt,
                     characteristic: BluetoothGattCharacteristic
                 ) {
                     super.onCharacteristicChanged(gatt, characteristic)
-                    val prefix = "[AppBluetoothGattService][bluetoothGattCallback][onCharacteristicChanged][old]"
-                    println(prefix)
-                    println("$prefix ${characteristic.value.print()}")
+                    onCharacteristicChanged(gatt, characteristic, characteristic.value)
                 }
 
                 override fun onCharacteristicChanged(
@@ -418,38 +462,17 @@ class AppBluetoothGattService(
                     value: ByteArray
                 ) {
                     super.onCharacteristicChanged(gatt, characteristic, value)
-                    val prefix = "[AppBluetoothGattService][bluetoothGattCallback][onCharacteristicChanged][new]"
-                    println(prefix)
-                    println("$prefix ${value.print()}")
-
-                    val bpm = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, 1)
-                    println("$prefix BPM: $bpm")
+                    onCharacteristicChanged(gatt, characteristic, value)
                 }
 
                 @Deprecated("Deprecated in Java")
                 override fun onDescriptorRead(
-                    gatt: BluetoothGatt?,
+                    gatt: BluetoothGatt,
                     descriptor: BluetoothGattDescriptor,
                     status: Int
                 ) {
                     super.onDescriptorRead(gatt, descriptor, status)
-                    val prefix = "[AppBluetoothGattService][bluetoothGattCallback][onDescriptorRead][old]"
-                    println(prefix)
-                    println(
-                        "$prefix descriptor read:        ${descriptor.uuid}, ${descriptor.characteristic.uuid}, $status [${
-                            GattState.fromState(
-                                status
-                            )
-                        }]"
-                    )
-                    println("$prefix descriptor read:        ${descriptor.uuid}, $status")
-                    println("$prefix decodeToString          ${descriptor.value.decodeToString()}")
-                    println("$prefix toHex                   ${descriptor.value.toHex()}")
-                    println("$prefix decodeSkipUnreadable    ${descriptor.value.decodeSkipUnreadable("$prefix ")}")
-                    println("$prefix print                   ${descriptor.value.print()}")
-                    println("$prefix bitsToHex               ${descriptor.value.bitsToHex("$prefix ")}")
-                    println("$prefix bits                    ${descriptor.value.bits()}")
-                    println("$prefix toBinaryString          ${descriptor.value.toBinaryString()}")
+                    onDescriptorRead(gatt, descriptor, status, descriptor.value)
                 }
 
                 override fun onDescriptorRead(
@@ -459,14 +482,7 @@ class AppBluetoothGattService(
                     value: ByteArray
                 ) {
                     super.onDescriptorRead(gatt, descriptor, status, value)
-                    val prefix = "[AppBluetoothGattService][bluetoothGattCallback][onDescriptorRead][new]"
-                    println(prefix)
-
-                    println(
-                        "$prefix ${descriptor.uuid}, " + "${descriptor.characteristic.uuid}, $status [${
-                            GattState.fromState(status).toString()
-                        }], ${value.print()}"
-                    )
+                    onDescriptorRead(gatt, descriptor, status, value)
                 }
 
                 @SuppressLint("MissingPermission")
@@ -476,9 +492,7 @@ class AppBluetoothGattService(
                     status: Int
                 ) {
                     super.onCharacteristicWrite(gatt, characteristic, status)
-                    val prefix = "[AppBluetoothGattService][bluetoothGattCallback][onCharacteristicWrite]"
-                    println(prefix)
-                    println("$prefix ${characteristic.uuid}, $status [${GattState.fromState(status).toString()}]")
+                    onCharacteristicWrite(gatt, characteristic, status)
                 }
 
                 @SuppressLint("MissingPermission")
@@ -488,9 +502,7 @@ class AppBluetoothGattService(
                     status: Int
                 ) {
                     super.onDescriptorWrite(gatt, descriptor, status)
-                    val prefix = "[AppBluetoothGattService][bluetoothGattCallback][onDescriptorWrite]"
-                    println(prefix)
-                    println("$prefix ${descriptor.uuid}, $status [${GattState.fromState(status).toString()}]")
+                    onDescriptorWrite(gatt, descriptor, status)
                 }
 
             }
