@@ -78,11 +78,11 @@ fun String.decodeHex(): ByteArray {
     }
 }
 
-fun ByteArray.decodeSkipUnreadable(): String {
+fun ByteArray.decodeSkipUnreadable(prefix: String): String {
     val badChars = '\uFFFD'
 
     this.forEach {
-        println(this.indexOf(it).toString() + ": " + it.toInt().toString())
+//        println(prefix + this.indexOf(it).toString() + ": " + it.toInt().toString())
     }
 
     val newString = this.decodeToString().filter {

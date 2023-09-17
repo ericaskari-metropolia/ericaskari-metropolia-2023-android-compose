@@ -166,12 +166,12 @@ class AppBluetoothGattService(
                     val permissions = characteristicInfoMap.permissions
                     val properties = characteristicInfoMap.properties
 
-                    println("$prefix characteristics: ${characteristic.uuid} permissions: ${permissions} properties: ${properties}")
+                    println("$prefix characteristics: ${characteristic.uuid} permissions[${characteristic.permissions}]: $permissions properties[${characteristic.properties}]: $properties")
                     characteristicInfoMap.descriptors.entries.forEach { characteristicAndDescriptorMap ->
                         val descriptor = characteristicAndDescriptorMap.key
                         val descriptorPermissionList = characteristicAndDescriptorMap.value
 
-                        println("$prefix descriptor:      ${descriptor.uuid} descriptorPermissionList: ${descriptorPermissionList}")
+                        println("$prefix descriptor:      ${descriptor.uuid} permissions[${descriptor.permissions}]: $descriptorPermissionList")
 
                     }
 
@@ -188,6 +188,10 @@ class AppBluetoothGattService(
     suspend fun enableNotificationsAndIndications() {
         val prefix = "[AppBluetoothGattService][enableNotificationsAndIndications]"
         println(prefix)
+        if (btGatt == null) {
+            println("$prefix btGatt is null.")
+            return
+        }
         val normalized = normalizeBluetoothGattServices(btGatt!!.services)
         normalized.entries.forEach { serviceAndCharacteristicsMap ->
             val service = serviceAndCharacteristicsMap.key
@@ -200,29 +204,29 @@ class AppBluetoothGattService(
                 val permissions = characteristicInfoMap.permissions
                 val properties = characteristicInfoMap.properties
 
-                val notifyRegistered = btGatt?.setCharacteristicNotification(characteristic, true)
+                val notifyRegistered = btGatt!!.setCharacteristicNotification(characteristic, true)
 
                 println("$prefix characteristics: ${characteristic.uuid} notifyRegistered: $notifyRegistered")
 
-                delay(1000)
+                delay(3000)
                 characteristicInfoMap.descriptors.entries.forEach { characteristicAndDescriptorMap ->
                     val descriptor = characteristicAndDescriptorMap.key
                     val descriptorPermissionList = characteristicAndDescriptorMap.value
 
                     if (characteristic.properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY > 0) {
-                        println("$prefix descriptor: ${descriptor.uuid} setValue: ${BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE}")
+                        println("$prefix descriptor: ${descriptor.uuid} setValue: ${BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE.decodeToString()}")
 
                         descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
-                        btGatt?.writeDescriptor(descriptor)
+                        btGatt!!.writeDescriptor(descriptor)
                     }
 
                     if (characteristic.properties and BluetoothGattCharacteristic.PROPERTY_INDICATE > 0) {
-                        println("$prefix descriptor: ${descriptor.uuid} setValue: ${BluetoothGattDescriptor.ENABLE_INDICATION_VALUE}")
+                        println("$prefix descriptor: ${descriptor.uuid} setValue: ${BluetoothGattDescriptor.ENABLE_INDICATION_VALUE.decodeToString()}")
                         descriptor.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE)
-                        btGatt?.writeDescriptor(descriptor)
+                        btGatt!!.writeDescriptor(descriptor)
                     }
 
-                    delay(1000)
+                    delay(3000)
 
                 }
 
@@ -467,7 +471,7 @@ class AppBluetoothGattService(
                     println("$prefix ${characteristic.uuid}, $status")
                     println("$prefix decodeToString          ${characteristic.value.decodeToString()}")
                     println("$prefix toHex                   ${characteristic.value.toHex()}")
-                    println("$prefix decodeSkipUnreadable    ${characteristic.value.decodeSkipUnreadable()}")
+                    println("$prefix decodeSkipUnreadable    ${characteristic.value.decodeSkipUnreadable("$prefix ")}")
                     println("$prefix print                   ${characteristic.value.print()}")
                     println("$prefix bitsToHex               ${characteristic.value.bitsToHex("$prefix  ")}")
                     println("$prefix bits                    ${characteristic.value.bits()}")
@@ -510,7 +514,7 @@ class AppBluetoothGattService(
                     println("$prefix descriptor read:        ${descriptor.uuid}, $status")
                     println("$prefix decodeToString          ${descriptor.value.decodeToString()}")
                     println("$prefix toHex                   ${descriptor.value.toHex()}")
-                    println("$prefix decodeSkipUnreadable    ${descriptor.value.decodeSkipUnreadable()}")
+                    println("$prefix decodeSkipUnreadable    ${descriptor.value.decodeSkipUnreadable("$prefix ")}")
                     println("$prefix print                   ${descriptor.value.print()}")
                     println("$prefix bitsToHex               ${descriptor.value.bitsToHex("$prefix ")}")
                     println("$prefix bits                    ${descriptor.value.bits()}")
