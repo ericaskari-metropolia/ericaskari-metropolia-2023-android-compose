@@ -43,37 +43,34 @@ class AppBluetoothManager(
         @SuppressLint("MissingPermission")
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
-            println("[AppBluetoothManager] onScanResult: $result")
 
             scope.launch {
                 bluetoothDeviceRepository.insertItem(BluetoothDevice.fromScanResult(result))
 
-//                result.scanRecord?.manufacturerSpecificData?.let { mfData ->
-//                    println("[AppBluetoothManager] onScanResult mfData: $mfData")
-//                }
-//                if (isScanning.value) {
-//                    launch { deleteNotSeen() }
-//                }
+                if (isScanning.value) {
+                    launch { deleteNotSeen() }
+                }
             }
 
         }
 
     }
 
-//    suspend fun deleteNotSeen() {
-//        println("[AppBluetoothManager] deleteNotSeen")
-//        lastCleanupTimestamp?.let {
-//            if (System.currentTimeMillis() - it > CLEANUP_DURATION) {
-////                bleRepository.deleteNotSeen()
-//                println("deleted not seen")
-//                lastCleanupTimestamp = System.currentTimeMillis()
-//            }
-//        }
-//    }
+    suspend fun deleteNotSeen() {
+        val prefix = "[AppBluetoothManager][deleteNotSeen]"
+        lastCleanupTimestamp?.let {
+            if (System.currentTimeMillis() - it > CLEANUP_DURATION) {
+                bluetoothDeviceRepository.deleteNotSeen()
+                println("$prefix deleted not seen")
+                lastCleanupTimestamp = System.currentTimeMillis()
+            }
+        }
+    }
 
     @SuppressLint("MissingPermission")
     fun scan() {
-        println("[AppBluetoothManager] scan")
+        val prefix = "[AppBluetoothManager][scan]"
+        println(prefix)
 
         if (!scanEnabled) {
             return
@@ -112,7 +109,7 @@ class AppBluetoothManager(
 
     companion object {
         private val scanSettings = ScanSettings.Builder()
-            .setScanMode(ScanSettings.SCAN_MODE_BALANCED)
+            .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
             .build()
     }
 }

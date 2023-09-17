@@ -79,4 +79,8 @@ dependencies {
 
     //ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
+
+    //Permissions
+    implementation("com.google.accompanist:accompanist-permissions:0.25.0")
+
 }

@@ -1,13 +1,13 @@
 package com.ericaskari.w4d5bluetooth.bluetooth
 
-import com.ericaskari.w4d5bluetooth.bluetooth.models.CharacteristicDescriptorPermission
+import com.ericaskari.w4d5bluetooth.bluetooth.models.CharacteristicPermission
 import com.ericaskari.w4d5bluetooth.bluetooth.models.CharacteristicProperty
 
 data class DeviceDescriptor(
     val uuid: String,
     val name: String,
     val charUuid: String,
-    val permissions: List<CharacteristicDescriptorPermission>,
+    val permissions: List<CharacteristicPermission>,
     val notificationProperty: CharacteristicProperty?,
     val readBytes: ByteArray?
 ) {

@@ -21,6 +21,7 @@ interface IBluetoothDeviceRepository {
      * Insert item in the data source
      */
     suspend fun insertItem(item: BluetoothDevice)
+    suspend fun deleteNotSeen()
 
 //    /**
 //     * Insert item in the data source

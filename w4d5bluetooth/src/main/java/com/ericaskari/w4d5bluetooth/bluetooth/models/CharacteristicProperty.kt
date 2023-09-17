@@ -2,10 +2,22 @@ package com.ericaskari.w4d5bluetooth.bluetooth.models
 
 enum class CharacteristicProperty(val value: Int) {
     PROPERTY_BROADCAST(1),              // 0000 0001
+
+    /**
+     * Characteristic property: Characteristic is readable.
+     */
     PROPERTY_READ(2),                   // 0000 0010
     PROPERTY_WRITE_NO_RESPONSE(4),      // 0000 0100
     PROPERTY_WRITE(8),                  // 0000 1000
+
+    /**
+     * Characteristic property: Characteristic supports notification
+     */
     PROPERTY_NOTIFY(16),                // 0001 0000
+
+    /**
+     * Characteristic property: Characteristic supports indication
+     */
     PROPERTY_INDICATE(32),              // 0010 0000
     PROPERTY_SIGNED_WRITE(64),          // 0100 0000
     PROPERTY_EXTENDED_PROPS(128);       // 1000 0000

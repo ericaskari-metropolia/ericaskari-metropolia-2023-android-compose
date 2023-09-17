@@ -9,7 +9,8 @@ import androidx.room.PrimaryKey
 data class BluetoothDeviceService(
     @PrimaryKey val id: String,
     @ColumnInfo val deviceAddress: String,
-) {
+
+    ) {
 
     companion object {
         fun fromBluetoothGattService(item: BluetoothGattService, deviceAddress: String): BluetoothDeviceService {

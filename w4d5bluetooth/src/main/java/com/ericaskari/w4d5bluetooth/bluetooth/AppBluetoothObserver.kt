@@ -79,6 +79,8 @@ class AppBluetoothObserver(
         } catch (e: Exception) {
             println(e)
         }
+
+
     }
 
 
