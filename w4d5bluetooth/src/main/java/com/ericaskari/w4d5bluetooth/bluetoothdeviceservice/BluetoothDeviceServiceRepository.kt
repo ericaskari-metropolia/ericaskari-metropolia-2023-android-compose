@@ -20,18 +20,12 @@ class BluetoothDeviceServiceRepository(private val itemDao: BluetoothDeviceServi
 
         val allItemsIds = list.map { it.id }
 
-        val shouldUpdateItem = list.find { itemsIds.contains(it.id) }
-        val shouldDeleteItem = list.find { !itemsIds.contains(it.id) }
-        val shouldInsertItem = items.find { !allItemsIds.contains(it.id) }
-        if (shouldInsertItem != null) {
-            insertItem(shouldInsertItem)
-        }
-        if (shouldUpdateItem != null) {
-            insertItem(shouldUpdateItem)
-        }
-        if (shouldDeleteItem != null) {
-            deleteItem(shouldDeleteItem)
-        }
+        val shouldUpdateItem = list.filter { itemsIds.contains(it.id) }
+        val shouldDeleteItem = list.filter { !itemsIds.contains(it.id) }
+        val shouldInsertItem = items.filter { !allItemsIds.contains(it.id) }
+        shouldUpdateItem.forEach { insertItem(it) }
+        shouldInsertItem.forEach { insertItem(it) }
+        shouldDeleteItem.forEach { deleteItem(it) }
         return itemDao.getAllItems()
     }
 

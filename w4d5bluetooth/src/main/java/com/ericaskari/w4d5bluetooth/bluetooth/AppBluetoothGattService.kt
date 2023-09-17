@@ -50,13 +50,14 @@ class AppBluetoothGattService(
     private val bluetoothGattCallback = appBluetoothGattCallbackFactory(
         scope = scope,
         onConnectionStateChange = { gatt, connectionState ->
+            btGatt = gatt
             val prefix = "[AppBluetoothGattService][onConnectionStateChange]"
             println(prefix)
-            btGatt = gatt
             connectMessage.value = connectionState
             println("$prefix connectionState: $connectionState")
         },
-        onServicesDiscovered = {
+        onServicesDiscovered = { gatt ->
+            btGatt = gatt
             val prefix = "[AppBluetoothGattService][onServicesDiscovered]"
             println(prefix)
 
@@ -93,7 +94,7 @@ class AppBluetoothGattService(
                 }
             }
 
-//            it.entries.forEach { serviceAndCharacteristicsMap ->
+//            btGatt.entries.forEach { serviceAndCharacteristicsMap ->
 //                val service = serviceAndCharacteristicsMap.key
 //                val characteristicsMap = serviceAndCharacteristicsMap.value
 //
@@ -252,48 +253,6 @@ class AppBluetoothGattService(
         }
     }
 
-    suspend fun readAll() {
-        val prefix = "[AppBluetoothGattService][readAll]"
-        println(prefix)
-
-        if (btGatt == null) {
-            println("$prefix Not connected")
-            return
-        }
-
-        val output = normalizeBluetoothGattServices(btGatt!!.services)
-
-        output.entries.forEach { serviceAndCharacteristicsMap ->
-            val service = serviceAndCharacteristicsMap.key
-            val characteristicsMap = serviceAndCharacteristicsMap.value
-
-            println("$prefix Service:         ${service.uuid}")
-
-            characteristicsMap.entries.forEach { characteristicsAndInfoMap ->
-                val characteristic = characteristicsAndInfoMap.key
-                val characteristicInfoMap = characteristicsAndInfoMap.value
-
-                val permissions = characteristicInfoMap.permissions
-                val properties = characteristicInfoMap.properties
-
-                println("$prefix characteristics: ${characteristic.uuid} permissions: ${permissions} properties: ${properties}")
-                readCharacteristic(characteristic.uuid.toString())
-                delay(1000)
-                characteristicInfoMap.descriptors.entries.forEach { characteristicAndDescriptorMap ->
-                    val descriptor = characteristicAndDescriptorMap.key
-                    val descriptorPermissionList = characteristicAndDescriptorMap.value
-
-                    println("$prefix descriptor:      ${descriptor.uuid} descriptorPermissionList: ${descriptorPermissionList}")
-                    readDescriptor(characteristic.uuid.toString(), descriptor.uuid.toString())
-                    delay(1000)
-
-                }
-
-            }
-        }
-
-    }
-
     @SuppressLint("MissingPermission")
     fun readCharacteristic(uuid: String) {
         val prefix = "[AppBluetoothGattService][readCharacteristic]"
@@ -377,7 +336,7 @@ class AppBluetoothGattService(
         private fun appBluetoothGattCallbackFactory(
             scope: CoroutineScope,
             onConnectionStateChange: (gatt: BluetoothGatt, connectionState: ConnectionState) -> Unit,
-            onServicesDiscovered: () -> Unit,
+            onServicesDiscovered: (gatt: BluetoothGatt) -> Unit,
         ): BluetoothGattCallback {
 
             return object : BluetoothGattCallback() {
@@ -397,16 +356,13 @@ class AppBluetoothGattService(
                     }
                 }
 
-                override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
+                override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
                     super.onServicesDiscovered(gatt, status)
                     val prefix = "[AppBluetoothGattService][bluetoothGattCallback][onServicesDiscovered]"
                     println(prefix)
                     println("$prefix status: $status")
-                    if (gatt == null) {
-                        println("$prefix gatt is null")
-                        return
-                    }
-                    onServicesDiscovered()
+
+                    onServicesDiscovered(gatt)
                 }
 
                 override fun onCharacteristicRead(

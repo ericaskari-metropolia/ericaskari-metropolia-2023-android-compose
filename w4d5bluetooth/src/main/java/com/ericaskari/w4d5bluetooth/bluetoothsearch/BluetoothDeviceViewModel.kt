@@ -6,5 +6,6 @@ class BluetoothDeviceViewModel(
     private val repository: IBluetoothDeviceRepository,
 ) : ViewModel() {
     val allItemsStream = repository.getAllItemsStream()
+    fun getItemStream(id: String) = repository.getItemStream(id)
 
 }

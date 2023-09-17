@@ -7,5 +7,6 @@ package com.ericaskari.w4d5bluetooth.bluetoothsearch
 class BluetoothDeviceRepository(private val dao: BluetoothDeviceDao) : IBluetoothDeviceRepository {
     override suspend fun insertItem(item: BluetoothDevice) = dao.insert(item)
     override fun getAllItemsStream() = dao.getAllItems()
+    override fun getItemStream(id: String) = dao.getItem(id)
 
 }

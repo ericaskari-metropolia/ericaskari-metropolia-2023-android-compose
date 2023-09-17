@@ -17,8 +17,6 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -26,6 +24,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.ericaskari.w4d5bluetooth.application.MyApplication
 import com.ericaskari.w4d5bluetooth.application.data.AppViewModelProvider
 import com.ericaskari.w4d5bluetooth.bluetooth.AppBluetoothViewModel
@@ -62,9 +66,18 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             FirstComposeAppTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                    ApplicationContent()
+                val navController = rememberNavController()
+
+                NavHost(navController = navController, startDestination = "devices") {
+                    composable("devices") { backStackEntry ->
+                        DevicesPage(navController)
+                    }
+                    composable(
+                        "devices/{deviceId}",
+                        arguments = listOf(navArgument("deviceId") { type = NavType.StringType }),
+                    ) { backStackEntry ->
+                        DeviceDetailsPage(navController, backStackEntry.arguments?.getString("deviceId"))
+                    }
                 }
             }
         }
@@ -72,10 +85,10 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun ApplicationContent(
+fun DevicesPage(
+    navHostController: NavHostController,
     appBluetoothViewModel: AppBluetoothViewModel = viewModel(factory = AppViewModelProvider.Factory),
     bluetoothDeviceViewModel: BluetoothDeviceViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    appBluetoothConnectViewModel: AppBluetoothConnectViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
 
     val isScanning = appBluetoothViewModel.isScanning.collectAsState()
@@ -97,31 +110,34 @@ fun ApplicationContent(
                 Text(text = "Stop Scan")
             }
         }
-        Row {
-            Button(onClick = {
-                CoroutineScope(Dispatchers.IO).launch {
-                    appBluetoothConnectViewModel.readAll()
-                }
-            }) {
-                Text(text = "readAll")
-            }
-            Button(onClick = {
-                CoroutineScope(Dispatchers.IO).launch {
-                    appBluetoothConnectViewModel.readCharacteristic()
-                }
-            }) {
-                Text(text = "readCharacteristic")
-            }
-            Button(onClick = {
-                CoroutineScope(Dispatchers.IO).launch {
-                    appBluetoothConnectViewModel.readDescriptor()
-                }
-            }) {
-                Text(text = "readDescriptor")
-            }
-        }
         AppBluetoothDeviceList(allItemsStream.value) {
-            appBluetoothConnectViewModel.connect(it)
+            navHostController.navigate("devices/${it}")
+
+        }
+    }
+}
+
+@Composable
+fun DeviceDetailsPage(
+    navHostController: NavHostController,
+    deviceId: String?,
+    bluetoothDeviceViewModel: BluetoothDeviceViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    bluetoothDeviceServiceViewModel: BluetoothDeviceServiceViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    appBluetoothConnectViewModel: AppBluetoothConnectViewModel = viewModel(factory = AppViewModelProvider.Factory),
+
+    ) {
+    Column {
+        Button(onClick = { appBluetoothConnectViewModel.connect(deviceId!!) }) {
+            Text(text = "Connect")
+        }
+        val item = bluetoothDeviceViewModel.getItemStream(deviceId!!).collectAsState(initial = null)
+        item.value?.let {
+            val services = bluetoothDeviceServiceViewModel.getAllItemsByDeviceId(it.address).collectAsState(listOf())
+            AppBluetoothDeviceServiceList(
+                data = services.value
+            ) {
+
+            }
         }
     }
 }
@@ -144,11 +160,9 @@ fun AppBluetoothDeviceList(data: List<BluetoothDevice>, modifier: Modifier = Mod
 
 @Composable
 fun AppBluetoothDeviceListItem(
-    bluetoothDeviceServiceViewModel: BluetoothDeviceServiceViewModel = viewModel(factory = AppViewModelProvider.Factory),
     data: BluetoothDevice,
     onClick: (id: String) -> Unit
 ) {
-    val services = bluetoothDeviceServiceViewModel.getAllItemsByDeviceId(data.address).collectAsState(listOf())
 
     ListItem(
         modifier = Modifier
@@ -165,11 +179,7 @@ fun AppBluetoothDeviceListItem(
         },
         trailingContent = { data.lastSeen?.let { Text(SimpleDateFormat("MM/dd/yy h:mm:ss ", Locale.US).format(Date(data.lastSeen))) } }
     )
-    AppBluetoothDeviceServiceList(
-        data = services.value
-    ) {
 
-    }
 }
 
 @Composable
@@ -178,8 +188,14 @@ fun AppBluetoothDeviceServiceList(
     modifier: Modifier = Modifier,
     onClick: (id: String) -> Unit
 ) {
-    data.forEach {
-        AppBluetoothDeviceServiceListItem(data = it) { id ->
+    LazyColumn(
+        modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(1.dp),
+    ) {
+        items(data) {
+            AppBluetoothDeviceServiceListItem(data = it) { id ->
+                onClick(id)
+            }
         }
     }
 }
