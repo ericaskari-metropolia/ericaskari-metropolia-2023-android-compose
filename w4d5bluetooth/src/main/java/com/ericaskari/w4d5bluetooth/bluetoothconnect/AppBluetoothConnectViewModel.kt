@@ -2,12 +2,15 @@ package com.ericaskari.w4d5bluetooth.bluetoothconnect
 
 import androidx.lifecycle.ViewModel
 import com.ericaskari.w4d5bluetooth.bluetooth.AppBluetoothGattService
+import kotlinx.coroutines.flow.Flow
 
 class AppBluetoothConnectViewModel(
     private val appBluetoothGattService: AppBluetoothGattService,
 ) : ViewModel() {
     fun readCharacteristic(uuid: String) = appBluetoothGattService.readCharacteristic(uuid)
     val connectMessage = appBluetoothGattService.connectMessage
+    val output: Flow<ByteArray?> = appBluetoothGattService.output
+
     fun close() = appBluetoothGattService.close()
     fun connect(address: String) {
         appBluetoothGattService.connect(address)

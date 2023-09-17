@@ -16,6 +16,8 @@ import java.util.concurrent.TimeUnit
 fun ByteArray.toHex(): String =
     "0x" + joinToString(separator = "") { eachByte -> "%02X".format(eachByte).uppercase() }
 
+fun ByteArray.toInteger(): Int = Integer.decode(this.toHex())
+
 fun ByteArray.print(): String =
     joinToString(separator = ",") { eachByte -> eachByte.toInt().toString() }
 

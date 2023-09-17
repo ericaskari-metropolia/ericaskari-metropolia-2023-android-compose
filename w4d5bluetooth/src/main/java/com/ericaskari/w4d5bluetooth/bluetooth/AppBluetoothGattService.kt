@@ -16,6 +16,7 @@ import com.ericaskari.w4d5bluetooth.bluetooth.models.print
 import com.ericaskari.w4d5bluetooth.bluetooth.models.toBinaryString
 import com.ericaskari.w4d5bluetooth.bluetooth.models.toGss
 import com.ericaskari.w4d5bluetooth.bluetooth.models.toHex
+import com.ericaskari.w4d5bluetooth.bluetooth.models.toInteger
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservice.BluetoothDeviceService
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservice.IBluetoothDeviceServiceRepository
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristic.BluetoothDeviceServiceCharacteristic
@@ -44,6 +45,9 @@ class AppBluetoothGattService(
     private var bluetoothGatt: BluetoothGatt? = null
 
     val connectMessage = MutableStateFlow(ConnectionState.DISCONNECTED)
+    val output = MutableStateFlow<ByteArray?>(null)
+
+
     private val bluetoothGattCallback = appBluetoothGattCallbackFactory(
         onConnectionStateChange = { bluetoothGatt, connectionState ->
             this.bluetoothGatt = bluetoothGatt
@@ -123,12 +127,19 @@ class AppBluetoothGattService(
         },
         onCharacteristicChanged = { bluetoothGatt, characteristic, value ->
             this.bluetoothGatt = bluetoothGatt
-            val prefix = "[AppBluetoothGattService][onCharacteristicChanged]"
-            println(prefix)
-            println("$prefix ${value.print()}")
+            output.value = value
 
-            val bpm = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, 1)
-            println("$prefix BPM: $bpm")
+            val prefix = "[AppBluetoothGattService][onCharacteristicChanged]"
+
+            println(prefix)
+            println("$prefix decodeToString          ${value.decodeToString()}")
+            println("$prefix toHex                   ${value.toHex()}")
+            println("$prefix Integer                 ${value.toInteger()}")
+            println("$prefix decodeSkipUnreadable    ${value.decodeSkipUnreadable("$prefix ")}")
+            println("$prefix print                   ${value.print()}")
+            println("$prefix bitsToHex               ${value.bitsToHex("$prefix  ")}")
+            println("$prefix bits                    ${value.bits()}")
+            println("$prefix toBinaryString          ${value.toBinaryString()}")
         },
         onCharacteristicRead = { bluetoothGatt, characteristic, value, status ->
             this.bluetoothGatt = bluetoothGatt
@@ -402,6 +413,7 @@ class AppBluetoothGattService(
         } finally {
             bluetoothGatt = null
             connectMessage.value = ConnectionState.DISCONNECTED
+            output.value = null
         }
     }
 
