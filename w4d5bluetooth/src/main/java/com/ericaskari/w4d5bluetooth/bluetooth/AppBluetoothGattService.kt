@@ -19,6 +19,7 @@ import com.ericaskari.w4d5bluetooth.bluetooth.models.decodeSkipUnreadable
 import com.ericaskari.w4d5bluetooth.bluetooth.models.print
 import com.ericaskari.w4d5bluetooth.bluetooth.models.toBinaryString
 import com.ericaskari.w4d5bluetooth.bluetooth.models.toHex
+import com.ericaskari.w4d5bluetooth.bluetoothdeviceservice.BluetoothDeviceService
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservice.IBluetoothDeviceServiceRepository
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristic.IBluetoothDeviceServiceCharacteristicRepository
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristicdescriptor.IBluetoothDeviceServiceCharacteristicDescriptorRepository
@@ -55,9 +56,17 @@ class AppBluetoothGattService(
         onServicesDiscovered = {
             val prefix = "[AppBluetoothGattService][onServicesDiscovered]"
             println(prefix)
+
+            scope.launch {
+                bluetoothDeviceServiceRepository.syncItems(
+                    *it.keys.toList().map { BluetoothDeviceService.fromBluetoothGattService(it, btGatt!!.device.address) }.toTypedArray()
+                )
+            }
+
             it.entries.forEach { serviceAndCharacteristicsMap ->
                 val service = serviceAndCharacteristicsMap.key
                 val characteristicsMap = serviceAndCharacteristicsMap.value
+
 
                 println("$prefix Service:         ${service.uuid}")
 
@@ -67,6 +76,7 @@ class AppBluetoothGattService(
 
                     val permissions = characteristicInfoMap.permissions
                     val properties = characteristicInfoMap.properties
+
 
                     println("$prefix characteristics: ${characteristic.uuid} permissions[${characteristic.permissions}]: $permissions properties[${characteristic.properties}]: $properties")
                     characteristicInfoMap.descriptors.entries.forEach { characteristicAndDescriptorMap ->
@@ -135,35 +145,28 @@ class AppBluetoothGattService(
         }
 
 
-
-
-
-        btGatt?.services?.forEach { gattSvcForNotify ->
-            gattSvcForNotify.characteristics?.forEach { svcChar ->
-
-
-//                svcChar.descriptors.find { desc ->
-//                    desc.uuid.toString() == CCCD.uuid
-//                }?.also { cccd ->
-////                    val notifyRegistered = btGatt?.setCharacteristicNotification(svcChar, true)
-//
-//                    if (svcChar.properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY > 0) {
-//                        cccd.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
-//                        btGatt?.writeDescriptor(cccd)
-//                    }
-//
-//                    if (svcChar.properties and BluetoothGattCharacteristic.PROPERTY_INDICATE > 0) {
-//                        cccd.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE)
-//                        btGatt?.writeDescriptor(cccd)
-//                    }
-//
-//                    // give gatt a little breathing room for writes
-//                    delay(300L)
-//
-//                }
-
-            }
-        }
+        //        btGatt?.services?.forEach { gattSvcForNotify ->
+        //            gattSvcForNotify.characteristics?.forEach { svcChar ->
+        //                svcChar.descriptors.find { desc ->
+        //                    desc.uuid.toString() == CCCD.uuid
+        //                }?.also { cccd ->
+        ////                    val notifyRegistered = btGatt?.setCharacteristicNotification(svcChar, true)
+        //
+        //                    if (svcChar.properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY > 0) {
+        //                        cccd.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
+        //                        btGatt?.writeDescriptor(cccd)
+        //                    }
+        //
+        //                    if (svcChar.properties and BluetoothGattCharacteristic.PROPERTY_INDICATE > 0) {
+        //                        cccd.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE)
+        //                        btGatt?.writeDescriptor(cccd)
+        //                    }
+        //
+        //                    // give gatt a little breathing room for writes
+        //                    delay(300L)
+        //
+        //                }
+        //            }
     }
 
     @SuppressLint("MissingPermission")

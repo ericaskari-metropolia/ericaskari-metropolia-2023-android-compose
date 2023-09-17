@@ -1,5 +1,6 @@
 package com.ericaskari.w4d5bluetooth.bluetoothdeviceservice
 
+import android.bluetooth.BluetoothGattService
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -11,7 +12,10 @@ data class BluetoothDeviceService(
 ) {
 
     companion object {
+        fun fromBluetoothGattService(item: BluetoothGattService, deviceAddress: String): BluetoothDeviceService {
+            return BluetoothDeviceService(item.uuid.toString(), deviceAddress)
 
+        }
 
     }
 }

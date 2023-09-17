@@ -21,15 +21,20 @@ interface IBluetoothDeviceServiceRepository {
      */
     suspend fun insertItem(item: BluetoothDeviceService)
 
+    /**
+     * Insert item in the data source
+     */
+    suspend fun syncItems(vararg items: BluetoothDeviceService): Flow<List<BluetoothDeviceService>>
+
 //    /**
 //     * Insert item in the data source
 //     */
 //    suspend fun insertItems(vararg items: Actor)
 //
-//    /**
-//     * Delete item from the data source
-//     */
-//    suspend fun deleteItem(item: Actor)
+    /**
+     * Delete item from the data source
+     */
+    suspend fun deleteItem(item: BluetoothDeviceService)
 //
 //    /**
 //     * Update item in the data source
