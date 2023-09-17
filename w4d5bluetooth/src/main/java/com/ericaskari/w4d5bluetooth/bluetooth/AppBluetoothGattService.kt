@@ -7,18 +7,14 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
-import android.bluetooth.BluetoothGattService
 import android.os.Build
-import com.ericaskari.w4d5bluetooth.bluetooth.models.CharacteristicPermission
-import com.ericaskari.w4d5bluetooth.bluetooth.models.CharacteristicProperty
-import com.ericaskari.w4d5bluetooth.bluetooth.models.CharacteristicWriteType
-import com.ericaskari.w4d5bluetooth.bluetooth.models.CharacteristicsInfo
 import com.ericaskari.w4d5bluetooth.bluetooth.models.GattState
 import com.ericaskari.w4d5bluetooth.bluetooth.models.bits
 import com.ericaskari.w4d5bluetooth.bluetooth.models.bitsToHex
 import com.ericaskari.w4d5bluetooth.bluetooth.models.decodeSkipUnreadable
 import com.ericaskari.w4d5bluetooth.bluetooth.models.print
 import com.ericaskari.w4d5bluetooth.bluetooth.models.toBinaryString
+import com.ericaskari.w4d5bluetooth.bluetooth.models.toGss
 import com.ericaskari.w4d5bluetooth.bluetooth.models.toHex
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservice.BluetoothDeviceService
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservice.IBluetoothDeviceServiceRepository
@@ -44,28 +40,29 @@ class AppBluetoothGattService(
     private val scope: CoroutineScope,
     private val app: Application,
 ) {
-    private var btGatt: BluetoothGatt? = null
+    private var bluetoothGatt: BluetoothGatt? = null
 
     val connectMessage = MutableStateFlow(ConnectionState.DISCONNECTED)
     private val bluetoothGattCallback = appBluetoothGattCallbackFactory(
-        onConnectionStateChange = { gatt, connectionState ->
-            btGatt = gatt
+        onConnectionStateChange = { bluetoothGatt, connectionState ->
+            this.bluetoothGatt = bluetoothGatt
             val prefix = "[AppBluetoothGattService][onConnectionStateChange]"
             println(prefix)
             connectMessage.value = connectionState
             println("$prefix connectionState: $connectionState")
         },
-        onServicesDiscovered = { gatt ->
-            btGatt = gatt
+        onServicesDiscovered = { bluetoothGatt ->
+            this.bluetoothGatt = bluetoothGatt
             val prefix = "[AppBluetoothGattService][onServicesDiscovered]"
             println(prefix)
 
             scope.launch {
-                val serviceList = btGatt!!.services.map { BluetoothDeviceService.fromBluetoothGattService(it, btGatt!!.device.address) }
+                val serviceList =
+                    bluetoothGatt!!.services.map { BluetoothDeviceService.fromBluetoothGattService(it, bluetoothGatt!!.device.address) }
 
-                bluetoothDeviceServiceRepository.syncItems(btGatt!!.device.address, *serviceList.toTypedArray())
+                bluetoothDeviceServiceRepository.syncItems(bluetoothGatt!!.device.address, *serviceList.toTypedArray())
 
-                btGatt!!.services.forEach { service ->
+                bluetoothGatt!!.services.forEach { service ->
                     val characteristics = service.characteristics.map characteristic@{ characteristic ->
                         return@characteristic BluetoothDeviceServiceCharacteristic.fromBluetoothGattCharacteristic(
                             characteristic,
@@ -76,7 +73,7 @@ class AppBluetoothGattService(
                     bluetoothDeviceServiceCharacteristicRepository.syncItems(service.uuid.toString(), *characteristics.toTypedArray())
                 }
 
-                btGatt!!.services.forEach { service ->
+                bluetoothGatt!!.services.forEach { service ->
                     service.characteristics.forEach { characteristic ->
                         val descriptors = characteristic.descriptors.map descriptors@{ descriptor ->
                             return@descriptors BluetoothDeviceServiceCharacteristicDescriptor.fromBluetoothGattDescriptor(
@@ -93,21 +90,21 @@ class AppBluetoothGattService(
                 }
             }
 
-            btGatt!!.services.forEach { service ->
+            bluetoothGatt!!.services.forEach { service ->
                 println()
                 println()
-                println("$prefix Service:         ${service.uuid}")
+                println("$prefix Service:         ${service.uuid.toGss()}")
 
                 service.characteristics.forEach { characteristic ->
                     val permissions = characteristic.permissions
                     val properties = characteristic.properties
                     println()
-                    println("$prefix characteristics: ${characteristic.uuid} permissions[${characteristic.permissions}]: $permissions properties[${characteristic.properties}]: $properties")
+                    println("$prefix characteristics: ${characteristic.uuid.toGss()} permissions[${characteristic.permissions}]: $permissions properties[${characteristic.properties}]: $properties")
 
                     characteristic.descriptors.forEach { descriptor ->
                         val permissions = descriptor.permissions
 
-                        println("$prefix descriptor:      ${descriptor.uuid} permissions[${descriptor.permissions}]: $permissions")
+                        println("$prefix descriptor:      ${descriptor.uuid.toGss()} permissions[${descriptor.permissions}]: $permissions")
 
                     }
 
@@ -118,8 +115,8 @@ class AppBluetoothGattService(
                 enableNotificationsAndIndications()
             }
         },
-        onCharacteristicChanged = { gatt, characteristic, value ->
-            btGatt = gatt
+        onCharacteristicChanged = { bluetoothGatt, characteristic, value ->
+            this.bluetoothGatt = bluetoothGatt
             val prefix = "[AppBluetoothGattService][onCharacteristicChanged]"
             println(prefix)
             println("$prefix ${value.print()}")
@@ -127,7 +124,8 @@ class AppBluetoothGattService(
             val bpm = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, 1)
             println("$prefix BPM: $bpm")
         },
-        onCharacteristicRead = { gatt, characteristic, value, status ->
+        onCharacteristicRead = { bluetoothGatt, characteristic, value, status ->
+            this.bluetoothGatt = bluetoothGatt
             val prefix = "[AppBluetoothGattService][onCharacteristicRead]"
             println(prefix)
             println("$prefix ${characteristic.uuid}, $status [${GattState.fromState(status)}] ${value.print()}")
@@ -139,7 +137,8 @@ class AppBluetoothGattService(
             println("$prefix bits                    ${characteristic.value.bits()}")
             println("$prefix toBinaryString          ${characteristic.value.toBinaryString()}")
         },
-        onDescriptorRead = { gatt: BluetoothGatt, descriptor: BluetoothGattDescriptor, status: Int, value: ByteArray ->
+        onDescriptorRead = { bluetoothGatt: BluetoothGatt, descriptor: BluetoothGattDescriptor, status: Int, value: ByteArray ->
+            this.bluetoothGatt = bluetoothGatt
 
             val prefix = "[AppBluetoothGattService][bluetoothGattCallback][onDescriptorRead][old]"
             println(prefix)
@@ -160,14 +159,16 @@ class AppBluetoothGattService(
             println("$prefix toBinaryString          ${descriptor.value.toBinaryString()}")
 
         },
-        onCharacteristicWrite = { gatt, characteristic, status ->
+        onCharacteristicWrite = { bluetoothGatt, characteristic, status ->
+            this.bluetoothGatt = bluetoothGatt
 
             val prefix = "[AppBluetoothGattService][bluetoothGattCallback][onCharacteristicWrite]"
             println(prefix)
             println("$prefix ${characteristic.uuid}, $status [${GattState.fromState(status).toString()}]")
 
         },
-        onDescriptorWrite = { gatt, descriptor, status ->
+        onDescriptorWrite = { bluetoothGatt, descriptor, status ->
+            this.bluetoothGatt = bluetoothGatt
 
             val prefix = "[AppBluetoothGattService][bluetoothGattCallback][onDescriptorWrite]"
             println(prefix)
@@ -181,12 +182,12 @@ class AppBluetoothGattService(
         val prefix = "[AppBluetoothGattService][enableNotificationsAndIndications]"
         println(prefix)
 
-        if (btGatt == null) {
-            println("$prefix btGatt is null.")
+        if (bluetoothGatt == null) {
+            println("$prefix bluetoothGatt is null.")
             return
         }
 
-        btGatt!!.services.forEach { service ->
+        bluetoothGatt!!.services.forEach { service ->
 
             service.characteristics.forEach { characteristic ->
 
@@ -194,19 +195,19 @@ class AppBluetoothGattService(
                     it.uuid.toString().equals(CLIENT_CHARACTERISTIC_CONFIG_UUID, ignoreCase = true)
                 }
                 configDescriptor?.let {
-                    val notifyRegistered = btGatt?.setCharacteristicNotification(characteristic, true)
+                    val notifyRegistered = bluetoothGatt?.setCharacteristicNotification(characteristic, true)
                     println("$prefix notifyRegistered: $notifyRegistered")
                     if (characteristic.properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY > 0) {
                         println("$prefix characteristic: ${characteristic.uuid} descriptor: ${it.uuid} >> ENABLE_NOTIFICATION_VALUE")
 
                         it.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
-                        btGatt?.writeDescriptor(it)
+                        bluetoothGatt?.writeDescriptor(it)
                     }
 
                     if (characteristic.properties and BluetoothGattCharacteristic.PROPERTY_INDICATE > 0) {
                         println("$prefix characteristic: ${characteristic.uuid} descriptor: ${it.uuid} >> ENABLE_INDICATION_VALUE")
                         it.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE)
-                        btGatt?.writeDescriptor(it)
+                        bluetoothGatt?.writeDescriptor(it)
                     }
                     delay(300L)
 
@@ -226,12 +227,12 @@ class AppBluetoothGattService(
     ) {
         val prefix = "[AppBluetoothGattService][writeDescriptor]"
         println(prefix)
-        if (btGatt == null) {
+        if (bluetoothGatt == null) {
             println("$prefix btGatt is null.")
             return
         }
 
-        val queriedService = btGatt!!.getService(UUID.fromString(serviceId))
+        val queriedService = bluetoothGatt!!.getService(UUID.fromString(serviceId))
         if (queriedService == null) {
             println("$prefix service is null.")
             return
@@ -251,7 +252,7 @@ class AppBluetoothGattService(
                 queriedDescriptor.let { descriptor ->
                     println("$prefix value is successfully set.")
                     descriptor.setValue(value)
-                    btGatt!!.writeDescriptor(descriptor)
+                    bluetoothGatt!!.writeDescriptor(descriptor)
                     delay(300L)
 
                 }
@@ -269,12 +270,12 @@ class AppBluetoothGattService(
     ) {
         val prefix = "[AppBluetoothGattService][writeCharacteristic]"
         println(prefix)
-        if (btGatt == null) {
+        if (bluetoothGatt == null) {
             println("$prefix btGatt is null.")
             return
         }
 
-        val queriedService = btGatt!!.getService(UUID.fromString(serviceId))
+        val queriedService = bluetoothGatt!!.getService(UUID.fromString(serviceId))
         if (queriedService == null) {
             println("$prefix service is null.")
             return
@@ -287,7 +288,7 @@ class AppBluetoothGattService(
             }
             queriedCharacteristic.let { characteristic ->
                 characteristic.setValue(value)
-                btGatt!!.writeCharacteristic(characteristic)
+                bluetoothGatt!!.writeCharacteristic(characteristic)
                 delay(300L)
             }
         }
@@ -319,10 +320,10 @@ class AppBluetoothGattService(
         val prefix = "[AppBluetoothGattService][readCharacteristic]"
         println(prefix)
 
-        btGatt?.services?.flatMap { it.characteristics }?.find { svcChar ->
+        bluetoothGatt?.services?.flatMap { it.characteristics }?.find { svcChar ->
             svcChar.uuid.toString() == uuid
         }?.also { foundChar ->
-            btGatt?.readCharacteristic(foundChar)
+            bluetoothGatt?.readCharacteristic(foundChar)
         }
     }
 
@@ -331,21 +332,21 @@ class AppBluetoothGattService(
         val prefix = "[AppBluetoothGattService][readDescriptor]"
         println(prefix)
 
-        val currentCharacteristic = btGatt?.services?.flatMap { it.characteristics }?.find { char ->
+        val currentCharacteristic = bluetoothGatt?.services?.flatMap { it.characteristics }?.find { char ->
             char.uuid.toString() == charUuid
         }
         currentCharacteristic?.let { char ->
             char.descriptors.find { desc ->
                 desc.uuid.toString() == descUuid
             }?.also { foundDesc ->
-                btGatt?.readDescriptor(foundDesc)
+                bluetoothGatt?.readDescriptor(foundDesc)
             }
         }
 
     }
 
     fun writeBytes(uuid: String, bytes: ByteArray) {
-        btGatt?.services?.flatMap { it.characteristics }?.find { svcChar ->
+        bluetoothGatt?.services?.flatMap { it.characteristics }?.find { svcChar ->
             svcChar.uuid.toString() == uuid
         }?.also { foundChar ->
             println("Found Char: " + foundChar.uuid.toString())
@@ -363,30 +364,27 @@ class AppBluetoothGattService(
 
     }
 
+    @SuppressLint("MissingPermission")
     fun writeDescriptor(charUuid: String, uuid: String, bytes: ByteArray) {
-        btGatt?.services?.flatMap { it.characteristics }?.flatMap { it.descriptors }
+        bluetoothGatt?.services?.flatMap { it.characteristics }?.flatMap { it.descriptors }
             ?.find { it.characteristic.uuid.toString() == charUuid && it.uuid.toString() == uuid }
             ?.also { foundDescriptor ->
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-//                    btGatt?.writeDescriptor(foundDescriptor, bytes)
-                } else {
-                    foundDescriptor.setValue(bytes)
-//                    btGatt?.writeDescriptor(foundDescriptor)
-                }
+                foundDescriptor.setValue(bytes)
+                bluetoothGatt?.writeDescriptor(foundDescriptor)
             }
     }
 
     @SuppressLint("MissingPermission")
     fun close() {
         try {
-            btGatt?.let { gatt ->
+            bluetoothGatt?.let { gatt ->
                 gatt.disconnect()
                 gatt.close()
             }
         } catch (e: Exception) {
             println(e)
         } finally {
-            btGatt = null
+            bluetoothGatt = null
             connectMessage.value = ConnectionState.DISCONNECTED
         }
     }
@@ -396,13 +394,13 @@ class AppBluetoothGattService(
 
 
         private fun appBluetoothGattCallbackFactory(
-            onConnectionStateChange: (gatt: BluetoothGatt, connectionState: ConnectionState) -> Unit,
-            onServicesDiscovered: (gatt: BluetoothGatt) -> Unit,
-            onCharacteristicChanged: (gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray) -> Unit,
-            onCharacteristicRead: (gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray, status: Int) -> Unit,
-            onDescriptorRead: (gatt: BluetoothGatt, descriptor: BluetoothGattDescriptor, status: Int, value: ByteArray) -> Unit,
-            onCharacteristicWrite: (gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int) -> Unit,
-            onDescriptorWrite: (gatt: BluetoothGatt?, descriptor: BluetoothGattDescriptor, status: Int) -> Unit
+            onConnectionStateChange: (bluetoothGatt: BluetoothGatt, connectionState: ConnectionState) -> Unit,
+            onServicesDiscovered: (bluetoothGatt: BluetoothGatt) -> Unit,
+            onCharacteristicChanged: (bluetoothGatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray) -> Unit,
+            onCharacteristicRead: (bluetoothGatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray, status: Int) -> Unit,
+            onDescriptorRead: (bluetoothGatt: BluetoothGatt, descriptor: BluetoothGattDescriptor, status: Int, value: ByteArray) -> Unit,
+            onCharacteristicWrite: (bluetoothGatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, status: Int) -> Unit,
+            onDescriptorWrite: (bluetoothGatt: BluetoothGatt?, descriptor: BluetoothGattDescriptor, status: Int) -> Unit
         ): BluetoothGattCallback {
 
             return object : BluetoothGattCallback() {
@@ -507,40 +505,5 @@ class AppBluetoothGattService(
 
             }
         }
-
-        fun normalizeBluetoothGattServices(services: List<BluetoothGattService>): Map<BluetoothGattService, Map<BluetoothGattCharacteristic, CharacteristicsInfo>> {
-            return services.fold(mutableMapOf()) servicesFold@{ servicesMap, service ->
-                val characteristics = service.characteristics
-
-                val infoListFolded: Map<BluetoothGattCharacteristic, CharacteristicsInfo> =
-                    characteristics.fold(mutableMapOf()) characteristicsFold@{ mapVal, characteristic ->
-                        val permissions = characteristic.permissions
-                        val properties = CharacteristicProperty.getAll(characteristic.properties)
-                        val writeTypes = CharacteristicWriteType.getAll(characteristic.writeType)
-
-                        val descriptors = characteristic.descriptors.fold(
-                            mutableMapOf<BluetoothGattDescriptor, List<CharacteristicPermission>>()
-                        ) descriptorFold@{ descriptorMap, descriptor ->
-
-                            descriptorMap[descriptor] = CharacteristicPermission.getAll(descriptor.permissions)
-                            return@descriptorFold descriptorMap
-                        }
-                        val info = CharacteristicsInfo(
-                            permissions = permissions,
-                            properties = properties,
-                            writeTypes = writeTypes,
-                            descriptors = descriptors
-                        )
-                        mapVal[characteristic] = info
-
-                        return@characteristicsFold mapVal
-                    }
-
-                servicesMap[service] = infoListFolded
-
-                return@servicesFold servicesMap
-            }
-        }
-
     }
 }

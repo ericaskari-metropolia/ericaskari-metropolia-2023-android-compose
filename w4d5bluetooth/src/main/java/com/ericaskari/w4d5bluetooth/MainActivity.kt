@@ -51,6 +51,7 @@ import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristicdescript
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristicdescriptor.BluetoothDeviceServiceCharacteristicDescriptorViewModel
 import com.ericaskari.w4d5bluetooth.bluetoothsearch.BluetoothDevice
 import com.ericaskari.w4d5bluetooth.bluetoothsearch.BluetoothDeviceViewModel
+import com.ericaskari.w4d5bluetooth.nordicsemiconductordatabase.BluetoothServiceInfoViewModel
 import com.ericaskari.w4d5bluetooth.ui.theme.FirstComposeAppTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -83,6 +84,19 @@ class MainActivity : ComponentActivity() {
                         arguments = listOf(navArgument("deviceId") { type = NavType.StringType }),
                     ) { backStackEntry ->
                         DeviceDetailsPage(navController, backStackEntry.arguments?.getString("deviceId"))
+                    }
+                    composable(
+                        "devices/{deviceId}/services/{serviceId}",
+                        arguments = listOf(
+                            navArgument("deviceId") { type = NavType.StringType },
+                            navArgument("serviceId") { type = NavType.StringType }
+                        ),
+                    ) { backStackEntry ->
+                        DeviceServiceDetailsPage(
+                            navHostController = navController,
+                            deviceId = backStackEntry.arguments?.getString("deviceId"),
+                            serviceId = backStackEntry.arguments?.getString("serviceId")
+                        )
                     }
                 }
             }
@@ -151,6 +165,39 @@ fun DevicesPage(
 }
 
 @Composable
+fun DeviceServiceDetailsPage(
+    navHostController: NavHostController,
+    deviceId: String?,
+    serviceId: String?,
+    modifier: Modifier = Modifier,
+    bluetoothDeviceServiceViewModel: BluetoothDeviceServiceViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    bluetoothDeviceServiceCharacteristicViewModel: BluetoothDeviceServiceCharacteristicViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    bluetoothServiceInfoViewModel: BluetoothServiceInfoViewModel = viewModel(factory = AppViewModelProvider.Factory),
+
+    ) {
+
+    val queriedService = serviceId?.let { bluetoothDeviceServiceViewModel.getItemStream(it).collectAsState(null) }
+
+    queriedService?.value?.let { service ->
+        val characteristic = bluetoothDeviceServiceCharacteristicViewModel.getAllItemsByServiceId(service.id).collectAsState(listOf())
+
+        Column {
+            ListItem(
+                overlineContent = { Text("Service") },
+                headlineContent = { Text(service.id) },
+            )
+            AppBluetoothDeviceServiceCharacteristicList(
+                characteristicList = characteristic.value
+            ) {
+
+            }
+        }
+    }
+
+
+}
+
+@Composable
 fun DeviceDetailsPage(
     navHostController: NavHostController,
     deviceId: String?,
@@ -171,13 +218,15 @@ fun DeviceDetailsPage(
             Text(text = "Status: ")
             Text(text = connectMessage.value.toString())
         }
+
         val item = bluetoothDeviceViewModel.getItemStream(deviceId!!).collectAsState(initial = null)
+
         item.value?.let {
             val services = bluetoothDeviceServiceViewModel.getAllItemsByDeviceId(it.address).collectAsState(listOf())
             AppBluetoothDeviceServiceList(
                 serviceList = services.value
-            ) {
-
+            ) { serviceId ->
+                navHostController.navigate("devices/$deviceId/services/$serviceId")
             }
         }
     }
@@ -233,42 +282,31 @@ fun AppBluetoothDeviceServiceList(
         modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(1.dp),
     ) {
-        items(serviceList) {
-            AppBluetoothDeviceServiceListItem(service = it) { id ->
-                onClick(id)
-            }
+        items(serviceList) { service ->
+            ListItem(
+                overlineContent = { Text("Service") },
+                headlineContent = { Text(service.id) },
+                modifier = Modifier
+                    .clickable { onClick(service.id) },
+            )
         }
-    }
-}
-
-
-@Composable
-fun AppBluetoothDeviceServiceListItem(
-    bluetoothDeviceServiceCharacteristicViewModel: BluetoothDeviceServiceCharacteristicViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    service: BluetoothDeviceService,
-    onClick: (id: String) -> Unit
-) {
-    val characteristic = bluetoothDeviceServiceCharacteristicViewModel.getAllItemsByServiceId(service.id).collectAsState(listOf())
-
-    ListItem(
-        overlineContent = { Text("Service") },
-        headlineContent = { Text(service.id) },
-    )
-    AppBluetoothDeviceServiceCharacteristicList(
-        CharacteristicList = characteristic.value
-    ) {
-
     }
 }
 
 @Composable
 fun AppBluetoothDeviceServiceCharacteristicList(
-    CharacteristicList: List<BluetoothDeviceServiceCharacteristic>,
+    characteristicList: List<BluetoothDeviceServiceCharacteristic>,
     modifier: Modifier = Modifier,
     onClick: (id: String) -> Unit
 ) {
-    CharacteristicList.forEach {
-        AppBluetoothDeviceServiceCharacteristicListItem(characteristic = it) { id ->
+    LazyColumn(
+        modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(1.dp),
+    ) {
+        items(characteristicList) {
+            AppBluetoothDeviceServiceCharacteristicListItem(characteristic = it) { id ->
+                onClick(id)
+            }
         }
     }
 }

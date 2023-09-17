@@ -11,6 +11,7 @@ class BluetoothDeviceServiceRepository(private val itemDao: BluetoothDeviceServi
     override suspend fun deleteItem(item: BluetoothDeviceService) = itemDao.deleteItem(item)
     override suspend fun insertItem(item: BluetoothDeviceService) = itemDao.insert(item)
     override fun getAllItemsStream() = itemDao.getAllItems()
+    override fun getItemStream(id: String) = itemDao.getItem(id)
     override fun getAllItemsByDeviceId(id: String) = itemDao.getAllItemsByDeviceId(id)
 
     override suspend fun syncItems(deviceId: String, vararg items: BluetoothDeviceService): Flow<List<BluetoothDeviceService>> {

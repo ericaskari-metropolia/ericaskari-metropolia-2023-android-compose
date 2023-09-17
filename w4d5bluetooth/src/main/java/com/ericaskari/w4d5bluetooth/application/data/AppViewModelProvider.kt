@@ -28,6 +28,7 @@ import com.ericaskari.w4d5bluetooth.bluetoothdeviceservice.BluetoothDeviceServic
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristic.BluetoothDeviceServiceCharacteristicViewModel
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristicdescriptor.BluetoothDeviceServiceCharacteristicDescriptorViewModel
 import com.ericaskari.w4d5bluetooth.bluetoothsearch.BluetoothDeviceViewModel
+import com.ericaskari.w4d5bluetooth.nordicsemiconductordatabase.BluetoothServiceInfoViewModel
 
 /**
  * Provides Factory to create instance of ViewModel for the entire app
@@ -63,6 +64,11 @@ object AppViewModelProvider {
         addInitializer(BluetoothDeviceServiceCharacteristicDescriptorViewModel::class) {
             BluetoothDeviceServiceCharacteristicDescriptorViewModel(
                 MyApplication().container.bluetoothDeviceServiceCharacteristicDescriptorRepository
+            )
+        }
+        addInitializer(BluetoothServiceInfoViewModel::class) {
+            BluetoothServiceInfoViewModel(
+                MyApplication().container.bluetoothServiceInfoRepository
             )
         }
     }

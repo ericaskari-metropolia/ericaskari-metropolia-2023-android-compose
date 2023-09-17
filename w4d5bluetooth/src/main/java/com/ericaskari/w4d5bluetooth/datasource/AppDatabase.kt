@@ -14,6 +14,8 @@ import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristicdescript
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristicdescriptor.BluetoothDeviceServiceCharacteristicDescriptorDao
 import com.ericaskari.w4d5bluetooth.bluetoothsearch.BluetoothDevice
 import com.ericaskari.w4d5bluetooth.bluetoothsearch.BluetoothDeviceDao
+import com.ericaskari.w4d5bluetooth.nordicsemiconductordatabase.BluetoothServiceInfo
+import com.ericaskari.w4d5bluetooth.nordicsemiconductordatabase.BluetoothServiceInfoDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -22,8 +24,8 @@ import kotlinx.coroutines.launch
  * @author Mohammad Askari
  */
 @Database(
-    entities = [BluetoothDevice::class, BluetoothDeviceService::class, BluetoothDeviceServiceCharacteristic::class, BluetoothDeviceServiceCharacteristicDescriptor::class],
-    version = 7,
+    entities = [BluetoothDevice::class, BluetoothDeviceService::class, BluetoothDeviceServiceCharacteristic::class, BluetoothDeviceServiceCharacteristicDescriptor::class, BluetoothServiceInfo::class],
+    version = 8,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -32,6 +34,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun bluetoothDeviceServiceDao(): BluetoothDeviceServiceDao
     abstract fun bluetoothDeviceServiceCharacteristicDao(): BluetoothDeviceServiceCharacteristicDao
     abstract fun bluetoothDeviceServiceCharacteristicDescriptorDao(): BluetoothDeviceServiceCharacteristicDescriptorDao
+    abstract fun bluetoothServiceInfoDao(): BluetoothServiceInfoDao
 
     companion object {
         private var DB_NAME: String = "w4d5bluetooth"

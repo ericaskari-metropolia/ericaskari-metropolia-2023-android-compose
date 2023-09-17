@@ -12,13 +12,12 @@ import com.ericaskari.w4d5bluetooth.bluetooth.AppBluetoothObserver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 class MyApplication : Application() {
     companion object {
         private val parentJob = Job()
         private val coroutineScope = CoroutineScope(Dispatchers.Default + parentJob)
-
-
     }
 
     /**
@@ -51,6 +50,11 @@ class MyApplication : Application() {
             bluetoothDeviceServiceCharacteristicRepository = container.bluetoothDeviceServiceCharacteristicRepository,
             bluetoothDeviceServiceCharacteristicDescriptorRepository = container.bluetoothDeviceServiceCharacteristicDescriptorRepository
         )
+
+        coroutineScope.launch {
+            container.bluetoothServiceInfoRepository.syncItems()
+        }
+
     }
 
     fun initializeAppBluetoothObserver(activity: ComponentActivity): AppBluetoothObserver {

@@ -11,11 +11,11 @@ interface IBluetoothDeviceServiceRepository {
      */
     fun getAllItemsStream(): Flow<List<BluetoothDeviceService>>
     fun getAllItemsByDeviceId(id: String): Flow<List<BluetoothDeviceService>>
-//
-//    /**
-//     * Retrieve an item from the given data source that matches with the [id].
-//     */
-//    fun getItemStream(id: String): Flow<Actor?>
+
+    /**
+     * Retrieve an item from the given data source that matches with the [id].
+     */
+    fun getItemStream(id: String): Flow<BluetoothDeviceService?>
 
     /**
      * Insert item in the data source
