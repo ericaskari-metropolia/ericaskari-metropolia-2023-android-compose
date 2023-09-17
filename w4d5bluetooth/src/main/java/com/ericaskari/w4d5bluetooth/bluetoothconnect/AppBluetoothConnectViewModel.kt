@@ -16,6 +16,20 @@ class AppBluetoothConnectViewModel(
 
     }
 
+    suspend fun enableNotificationsAndIndications(
+        serviceId: String,
+        characteristicId: String,
+        descriptorId: String,
+        value: ByteArray
+    ) {
+        appBluetoothGattService.enableNotificationsAndIndications(
+            serviceId = serviceId,
+            characteristicId = characteristicId,
+            descriptorId = descriptorId,
+            value = value
+        )
+    }
+
     suspend fun readCharacteristic() {
         appBluetoothGattService.readCharacteristic("00002a00-0000-1000-8000-00805f9b34fb")
         delay(1000)

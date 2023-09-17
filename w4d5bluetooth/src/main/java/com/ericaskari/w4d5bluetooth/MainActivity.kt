@@ -1,5 +1,7 @@
 package com.ericaskari.w4d5bluetooth
 
+import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattDescriptor
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -27,6 +29,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ericaskari.w4d5bluetooth.application.MyApplication
 import com.ericaskari.w4d5bluetooth.application.data.AppViewModelProvider
 import com.ericaskari.w4d5bluetooth.bluetooth.AppBluetoothViewModel
+import com.ericaskari.w4d5bluetooth.bluetooth.models.CharacteristicDescriptorPermission
+import com.ericaskari.w4d5bluetooth.bluetooth.models.CharacteristicProperty
+import com.ericaskari.w4d5bluetooth.bluetooth.models.CharacteristicWriteType
 import com.ericaskari.w4d5bluetooth.bluetoothconnect.AppBluetoothConnectViewModel
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservice.BluetoothDeviceService
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservice.BluetoothDeviceServiceViewModel
@@ -82,6 +87,9 @@ fun ApplicationContent(
         Text(text = "isScanning: ${isScanning.value}")
         Text(text = "bluetoothAdapterState: ${bluetoothAdapterState.value}")
         Row {
+            Button(onClick = { appBluetoothViewModel.askToTurnBluetoothOn() }) {
+                Text(text = "Allow bluetooth")
+            }
             Button(onClick = { appBluetoothViewModel.startScan() }) {
                 Text(text = "Start Scan")
             }
@@ -220,9 +228,20 @@ fun AppBluetoothDeviceServiceCharacteristicListItem(
     ListItem(
         overlineContent = { Text("Characteristic") },
         headlineContent = { Text(data.id) },
+        supportingContent = {
+            Column {
+                Text("permissions:")
+                Text(CharacteristicDescriptorPermission.getAll(data.permissions).toString())
+                Text("properties:")
+                Text(CharacteristicProperty.getAll(data.properties).toString())
+                Text("writeTypes:")
+                Text(CharacteristicWriteType.getAll(data.writeType).toString())
+            }
+        },
     )
     AppBluetoothDeviceServiceCharacteristicDescriptorList(
-        data = descriptors.value
+        data = descriptors.value,
+        characteristic = data
     ) {
 
     }
@@ -230,25 +249,68 @@ fun AppBluetoothDeviceServiceCharacteristicListItem(
 
 @Composable
 fun AppBluetoothDeviceServiceCharacteristicDescriptorList(
+    characteristic: BluetoothDeviceServiceCharacteristic,
     data: List<BluetoothDeviceServiceCharacteristicDescriptor>,
     modifier: Modifier = Modifier,
     onClick: (id: String) -> Unit
 ) {
     data.forEach {
-        AppBluetoothDeviceServiceCharacteristicDescriptorListItem(data = it) { id ->
+        AppBluetoothDeviceServiceCharacteristicDescriptorListItem(
+            data = it,
+            characteristic = characteristic
+        ) { id ->
         }
     }
 }
 
 @Composable
 fun AppBluetoothDeviceServiceCharacteristicDescriptorListItem(
+    characteristic: BluetoothDeviceServiceCharacteristic,
     data: BluetoothDeviceServiceCharacteristicDescriptor,
-    onClick: (id: String) -> Unit
+    appBluetoothConnectViewModel: AppBluetoothConnectViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    onClick: (id: String) -> Unit,
 ) {
 
     ListItem(
         overlineContent = { Text("Descriptor") },
         headlineContent = { Text(data.id) },
+        supportingContent = {
+            Column {
+                if (characteristic.properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY > 0) {
+                    Button(
+                        onClick = {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                appBluetoothConnectViewModel.enableNotificationsAndIndications(
+                                    serviceId = characteristic.serviceId,
+                                    characteristicId = characteristic.id,
+                                    descriptorId = data.id,
+                                    value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                                )
+                            }
+                        },
+                    ) {
+                        Text(text = "ENABLE_NOTIFICATION_VALUE")
+                    }
+                }
+                if (characteristic.properties and BluetoothGattCharacteristic.PROPERTY_INDICATE > 0) {
+                    Button(
+                        onClick = {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                appBluetoothConnectViewModel.enableNotificationsAndIndications(
+                                    serviceId = characteristic.serviceId,
+                                    characteristicId = characteristic.id,
+                                    descriptorId = data.id,
+                                    value = BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
+                                )
+                            }
+                        },
+                    ) {
+                        Text(text = "ENABLE_INDICATION_VALUE")
+                    }
+                }
+
+            }
+        }
     )
 }
 

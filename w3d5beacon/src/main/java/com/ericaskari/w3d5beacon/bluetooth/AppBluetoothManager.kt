@@ -46,17 +46,15 @@ class AppBluetoothManager(
         @SuppressLint("MissingPermission")
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
-            println("[AppBluetoothManager] onScanResult: $result")
-//            appBluetoothSearchRepository.insertItem()
+            //println("[AppBluetoothManager] onScanResult: $result")
+            // appBluetoothSearchRepository.insertItem()
 
             scope.launch {
 //                parseScanResult(result)
                 appBluetoothSearchRepository.insertItem(AppBluetoothSearch.fromScanResult(result))
                 result.scanRecord?.manufacturerSpecificData?.let { mfData ->
-                    println("[AppBluetoothManager] onScanResult mfData: $mfData")
+                    // println("[AppBluetoothManager] onScanResult mfData: $mfData")
                 }
-
-
 
                 if (isScanning.value)
                     launch { deleteNotSeen() }

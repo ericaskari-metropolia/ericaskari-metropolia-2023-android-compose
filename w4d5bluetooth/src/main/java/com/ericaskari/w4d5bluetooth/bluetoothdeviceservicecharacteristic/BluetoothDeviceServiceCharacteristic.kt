@@ -9,11 +9,20 @@ import androidx.room.PrimaryKey
 data class BluetoothDeviceServiceCharacteristic(
     @PrimaryKey val id: String,
     @ColumnInfo val serviceId: String,
+    @ColumnInfo val permissions: Int,
+    @ColumnInfo val properties: Int,
+    @ColumnInfo val writeType: Int,
 ) {
 
     companion object {
         fun fromBluetoothGattCharacteristic(item: BluetoothGattCharacteristic, serviceId: String): BluetoothDeviceServiceCharacteristic {
-            return BluetoothDeviceServiceCharacteristic(item.uuid.toString(), serviceId)
+            return BluetoothDeviceServiceCharacteristic(
+                id = item.uuid.toString(),
+                serviceId = serviceId,
+                permissions = item.permissions,
+                properties = item.properties,
+                writeType = item.writeType
+            )
 
         }
 

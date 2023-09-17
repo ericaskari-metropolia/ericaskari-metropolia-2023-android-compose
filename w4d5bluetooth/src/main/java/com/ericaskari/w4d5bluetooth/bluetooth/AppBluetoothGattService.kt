@@ -31,6 +31,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 
 class AppBluetoothGattService(
@@ -60,7 +61,7 @@ class AppBluetoothGattService(
             println(prefix)
 
             scope.launch {
-                val serviceList = it.keys.toList().map { BluetoothDeviceService.fromBluetoothGattService(it, btGatt!!.device.address) }
+                val serviceList = btGatt!!.services.map { BluetoothDeviceService.fromBluetoothGattService(it, btGatt!!.device.address) }
 
                 bluetoothDeviceServiceRepository.syncItems(btGatt!!.device.address, *serviceList.toTypedArray())
 
@@ -92,88 +93,120 @@ class AppBluetoothGattService(
                 }
             }
 
-            it.entries.forEach { serviceAndCharacteristicsMap ->
-                val service = serviceAndCharacteristicsMap.key
-                val characteristicsMap = serviceAndCharacteristicsMap.value
+//            it.entries.forEach { serviceAndCharacteristicsMap ->
+//                val service = serviceAndCharacteristicsMap.key
+//                val characteristicsMap = serviceAndCharacteristicsMap.value
+//
+//
+//                println("$prefix Service:         ${service.uuid}")
+//
+//                characteristicsMap.entries.forEach { characteristicsAndInfoMap ->
+//                    val characteristic = characteristicsAndInfoMap.key
+//                    val characteristicInfoMap = characteristicsAndInfoMap.value
+//
+//                    val permissions = characteristicInfoMap.permissions
+//                    val properties = characteristicInfoMap.properties
+//
+//
+//                    println("$prefix characteristics: ${characteristic.uuid} permissions[${characteristic.permissions}]: $permissions properties[${characteristic.properties}]: $properties")
+//                    characteristicInfoMap.descriptors.entries.forEach { characteristicAndDescriptorMap ->
+//                        val descriptor = characteristicAndDescriptorMap.key
+//                        val descriptorPermissionList = characteristicAndDescriptorMap.value
+//
+//                        println("$prefix descriptor:      ${descriptor.uuid} permissions[${descriptor.permissions}]: $descriptorPermissionList")
+//
+//                    }
+//
+//                }
+//            }
 
-
-                println("$prefix Service:         ${service.uuid}")
-
-                characteristicsMap.entries.forEach { characteristicsAndInfoMap ->
-                    val characteristic = characteristicsAndInfoMap.key
-                    val characteristicInfoMap = characteristicsAndInfoMap.value
-
-                    val permissions = characteristicInfoMap.permissions
-                    val properties = characteristicInfoMap.properties
-
-
-                    println("$prefix characteristics: ${characteristic.uuid} permissions[${characteristic.permissions}]: $permissions properties[${characteristic.properties}]: $properties")
-                    characteristicInfoMap.descriptors.entries.forEach { characteristicAndDescriptorMap ->
-                        val descriptor = characteristicAndDescriptorMap.key
-                        val descriptorPermissionList = characteristicAndDescriptorMap.value
-
-                        println("$prefix descriptor:      ${descriptor.uuid} permissions[${descriptor.permissions}]: $descriptorPermissionList")
-
-                    }
-
-                }
-            }
-
-            scope.launch {
-                enableNotificationsAndIndications()
-            }
+//            scope.launch {
+//                enableNotificationsAndIndications()
+//            }
         }
     )
 
     @SuppressLint("MissingPermission")
-    suspend fun enableNotificationsAndIndications() {
+    suspend fun enableNotificationsAndIndications(
+        serviceId: String,
+        characteristicId: String,
+        descriptorId: String,
+        value: ByteArray
+    ) {
         val prefix = "[AppBluetoothGattService][enableNotificationsAndIndications]"
         println(prefix)
         if (btGatt == null) {
             println("$prefix btGatt is null.")
             return
         }
-        val normalized = normalizeBluetoothGattServices(btGatt!!.services)
-        normalized.entries.forEach { serviceAndCharacteristicsMap ->
-            val service = serviceAndCharacteristicsMap.key
-            val characteristicsMap = serviceAndCharacteristicsMap.value
 
-            characteristicsMap.entries.forEach { characteristicsAndInfoMap ->
-                val characteristic = characteristicsAndInfoMap.key
-                val characteristicInfoMap = characteristicsAndInfoMap.value
-
-                val permissions = characteristicInfoMap.permissions
-                val properties = characteristicInfoMap.properties
-
-                val notifyRegistered = btGatt!!.setCharacteristicNotification(characteristic, true)
-
-                println("$prefix characteristics: ${characteristic.uuid} notifyRegistered: $notifyRegistered")
-
-                delay(3000)
-                characteristicInfoMap.descriptors.entries.forEach { characteristicAndDescriptorMap ->
-                    val descriptor = characteristicAndDescriptorMap.key
-                    val descriptorPermissionList = characteristicAndDescriptorMap.value
-
-                    if (characteristic.properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY > 0) {
-                        println("$prefix descriptor: ${descriptor.uuid} setValue: ENABLE_NOTIFICATION_VALUE}")
-                        descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
-                        btGatt!!.writeDescriptor(descriptor)
-                    }
-
-                    if (characteristic.properties and BluetoothGattCharacteristic.PROPERTY_INDICATE > 0) {
-                        println("$prefix descriptor: ${descriptor.uuid} setValue: ENABLE_INDICATION_VALUE")
-                        descriptor.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE)
-                        btGatt!!.writeDescriptor(descriptor)
-                    }
-
-                    delay(3000)
-
+        val queriedService = btGatt!!.getService(UUID.fromString(serviceId))
+        if (queriedService == null) {
+            println("$prefix service is null.")
+            return
+        }
+        queriedService.let { service ->
+            val queriedCharacteristic = service.getCharacteristic(UUID.fromString(characteristicId))
+            if (queriedCharacteristic == null) {
+                println("$prefix characteristic is null.")
+                return
+            }
+            queriedCharacteristic.let { characteristic ->
+                val queriedDescriptor = characteristic.getDescriptor(UUID.fromString(descriptorId))
+                if (queriedDescriptor == null) {
+                    println("$prefix queriedDescriptor is null.")
+                    return
+                }
+                queriedDescriptor.let { descriptor ->
+                    descriptor.setValue(value)
+                    btGatt!!.writeDescriptor(descriptor)
+                    println("$prefix value is successfully set.")
+                    delay(300L)
                 }
 
             }
         }
 
-
+        //
+        //        val normalized = normalizeBluetoothGattServices(btGatt!!.services)
+        //        normalized.entries.forEach { serviceAndCharacteristicsMap ->
+        //            val service = serviceAndCharacteristicsMap.key
+        //            val characteristicsMap = serviceAndCharacteristicsMap.value
+        //
+        //            characteristicsMap.entries.forEach { characteristicsAndInfoMap ->
+        //                val characteristic = characteristicsAndInfoMap.key
+        //                val characteristicInfoMap = characteristicsAndInfoMap.value
+        //
+        //                val permissions = characteristicInfoMap.permissions
+        //                val properties = characteristicInfoMap.properties
+        //
+        //                val notifyRegistered = btGatt!!.setCharacteristicNotification(characteristic, true)
+        //
+        //                println("$prefix characteristics: ${characteristic.uuid} notifyRegistered: $notifyRegistered")
+        //
+        //                delay(3000)
+        //                characteristicInfoMap.descriptors.entries.forEach { characteristicAndDescriptorMap ->
+        //                    val descriptor = characteristicAndDescriptorMap.key
+        //                    val descriptorPermissionList = characteristicAndDescriptorMap.value
+        //
+        //                    if (characteristic.properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY > 0) {
+        //                        println("$prefix descriptor: ${descriptor.uuid} setValue: ENABLE_NOTIFICATION_VALUE}")
+        //                        descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
+        //                        btGatt!!.writeDescriptor(descriptor)
+        //                    }
+        //
+        //                    if (characteristic.properties and BluetoothGattCharacteristic.PROPERTY_INDICATE > 0) {
+        //                        println("$prefix descriptor: ${descriptor.uuid} setValue: ENABLE_INDICATION_VALUE")
+        //                        descriptor.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE)
+        //                        btGatt!!.writeDescriptor(descriptor)
+        //                    }
+        //
+        //                    delay(300L)
+        //
+        //                }
+        //
+        //            }
+        //        }
         //        btGatt?.services?.forEach { gattSvcForNotify ->
         //            gattSvcForNotify.characteristics?.forEach { svcChar ->
         //                svcChar.descriptors.find { desc ->
@@ -344,7 +377,7 @@ class AppBluetoothGattService(
         private fun appBluetoothGattCallbackFactory(
             scope: CoroutineScope,
             onConnectionStateChange: (gatt: BluetoothGatt, connectionState: ConnectionState) -> Unit,
-            onServicesDiscovered: (result: Map<BluetoothGattService, Map<BluetoothGattCharacteristic, CharacteristicsInfo>>) -> Unit,
+            onServicesDiscovered: () -> Unit,
         ): BluetoothGattCallback {
 
             return object : BluetoothGattCallback() {
@@ -356,7 +389,6 @@ class AppBluetoothGattService(
                     println(prefix)
 
                     val connectionState = ConnectionState.fromBluetoothProfileState(newState)
-                    println("$prefix connectionState: $connectionState")
 
                     onConnectionStateChange(gatt, connectionState)
 
@@ -374,9 +406,7 @@ class AppBluetoothGattService(
                         println("$prefix gatt is null")
                         return
                     }
-                    scope.launch {
-                        onServicesDiscovered(normalizeBluetoothGattServices(gatt.services))
-                    }
+                    onServicesDiscovered()
                 }
 
                 override fun onCharacteristicRead(

@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
  */
 @Database(
     entities = [BluetoothDevice::class, BluetoothDeviceService::class, BluetoothDeviceServiceCharacteristic::class, BluetoothDeviceServiceCharacteristicDescriptor::class],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
