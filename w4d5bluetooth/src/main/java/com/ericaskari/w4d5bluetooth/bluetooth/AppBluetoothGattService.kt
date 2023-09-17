@@ -22,17 +22,18 @@ import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristic.Bluetoo
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristic.IBluetoothDeviceServiceCharacteristicRepository
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristicdescriptor.BluetoothDeviceServiceCharacteristicDescriptor
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristicdescriptor.IBluetoothDeviceServiceCharacteristicDescriptorRepository
-import com.ericaskari.w4d5bluetooth.bluetoothsearch.IBluetoothDeviceRepository
 import com.ericaskari.w4d5bluetooth.enums.ConnectionState
+import com.ericaskari.w4d5bluetooth.nordicsemiconductordatabase.IBluetoothServiceInfoRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.UUID
 
 
 class AppBluetoothGattService(
-    private val bluetoothDeviceRepository: IBluetoothDeviceRepository,
+    private val bluetoothServiceInfoRepository: IBluetoothServiceInfoRepository,
     private val bluetoothDeviceServiceRepository: IBluetoothDeviceServiceRepository,
     private val bluetoothDeviceServiceCharacteristicRepository: IBluetoothDeviceServiceCharacteristicRepository,
     private val bluetoothDeviceServiceCharacteristicDescriptorRepository: IBluetoothDeviceServiceCharacteristicDescriptorRepository,
@@ -57,8 +58,15 @@ class AppBluetoothGattService(
             println(prefix)
 
             scope.launch {
+                val infoList = bluetoothServiceInfoRepository.getAllItemsStream().first()
                 val serviceList =
-                    bluetoothGatt!!.services.map { BluetoothDeviceService.fromBluetoothGattService(it, bluetoothGatt!!.device.address) }
+                    bluetoothGatt!!.services.map {
+                        BluetoothDeviceService.fromBluetoothGattService(
+                            it,
+                            bluetoothGatt!!.device.address,
+                            infoList
+                        )
+                    }
 
                 bluetoothDeviceServiceRepository.syncItems(bluetoothGatt!!.device.address, *serviceList.toTypedArray())
 

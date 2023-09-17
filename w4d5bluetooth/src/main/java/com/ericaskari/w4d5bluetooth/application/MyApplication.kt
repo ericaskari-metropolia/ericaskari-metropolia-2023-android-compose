@@ -45,7 +45,7 @@ class MyApplication : Application() {
             btAdapter = bluetoothAdapter,
             scope = coroutineScope,
             app = this,
-            bluetoothDeviceRepository = container.bluetoothDeviceRepository,
+            bluetoothServiceInfoRepository = container.bluetoothServiceInfoRepository,
             bluetoothDeviceServiceRepository = container.bluetoothDeviceServiceRepository,
             bluetoothDeviceServiceCharacteristicRepository = container.bluetoothDeviceServiceCharacteristicRepository,
             bluetoothDeviceServiceCharacteristicDescriptorRepository = container.bluetoothDeviceServiceCharacteristicDescriptorRepository
