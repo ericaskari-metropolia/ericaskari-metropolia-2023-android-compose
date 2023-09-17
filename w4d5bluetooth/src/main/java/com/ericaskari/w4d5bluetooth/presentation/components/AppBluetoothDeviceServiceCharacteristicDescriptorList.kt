@@ -2,7 +2,6 @@ package com.ericaskari.w4d5bluetooth.presentation.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.ericaskari.w4d5bluetooth.AppBluetoothDeviceServiceCharacteristicDescriptorListItem
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristic.BluetoothDeviceServiceCharacteristic
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristicdescriptor.BluetoothDeviceServiceCharacteristicDescriptor
 

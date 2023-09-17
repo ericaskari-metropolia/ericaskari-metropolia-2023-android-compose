@@ -15,7 +15,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.ericaskari.w4d5bluetooth.AppBluetoothDeviceServiceCharacteristicDescriptorList
 import com.ericaskari.w4d5bluetooth.application.data.AppViewModelProvider
 import com.ericaskari.w4d5bluetooth.bluetooth.models.CharacteristicPermission
 import com.ericaskari.w4d5bluetooth.bluetooth.models.CharacteristicProperty

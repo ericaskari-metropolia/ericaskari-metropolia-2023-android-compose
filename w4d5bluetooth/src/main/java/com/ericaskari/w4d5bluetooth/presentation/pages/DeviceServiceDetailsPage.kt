@@ -8,12 +8,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.ericaskari.w4d5bluetooth.AppBluetoothDeviceServiceCharacteristicList
 import com.ericaskari.w4d5bluetooth.application.data.AppViewModelProvider
 import com.ericaskari.w4d5bluetooth.bluetooth.models.toGss
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservice.BluetoothDeviceServiceViewModel
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristic.BluetoothDeviceServiceCharacteristicViewModel
 import com.ericaskari.w4d5bluetooth.nordicsemiconductordatabase.BluetoothServiceInfoViewModel
+import com.ericaskari.w4d5bluetooth.presentation.components.AppBluetoothDeviceServiceCharacteristicList
 import java.util.UUID
 
 @Composable

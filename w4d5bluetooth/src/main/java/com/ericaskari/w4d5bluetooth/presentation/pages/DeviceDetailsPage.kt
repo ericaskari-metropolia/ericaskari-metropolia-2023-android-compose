@@ -8,11 +8,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.ericaskari.w4d5bluetooth.AppBluetoothDeviceServiceList
 import com.ericaskari.w4d5bluetooth.application.data.AppViewModelProvider
 import com.ericaskari.w4d5bluetooth.bluetoothconnect.AppBluetoothConnectViewModel
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservice.BluetoothDeviceServiceViewModel
 import com.ericaskari.w4d5bluetooth.bluetoothsearch.BluetoothDeviceViewModel
+import com.ericaskari.w4d5bluetooth.presentation.components.AppBluetoothDeviceServiceList
 
 @Composable
 fun DeviceDetailsPage(
