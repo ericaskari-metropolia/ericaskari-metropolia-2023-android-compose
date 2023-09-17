@@ -1,7 +1,5 @@
 package com.ericaskari.w4d5bluetooth.presentation.components
 
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattDescriptor
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -44,32 +42,15 @@ fun AppBluetoothDeviceServiceCharacteristicDescriptorList(
                             Button(
                                 onClick = {
                                     CoroutineScope(Dispatchers.IO).launch {
-                                        appBluetoothConnectViewModel.writeDescriptor(
+                                        appBluetoothConnectViewModel.enableNotificationsAndIndications(
+                                            deviceId = characteristic.deviceId,
                                             serviceId = characteristic.serviceId,
                                             characteristicId = characteristic.id,
-                                            descriptorId = descriptor.id,
-                                            value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
                                         )
                                     }
                                 },
                             ) {
                                 Text(text = "ENABLE_NOTIFICATION_VALUE")
-                            }
-                        }
-                        if (characteristic.properties and BluetoothGattCharacteristic.PROPERTY_INDICATE > 0) {
-                            Button(
-                                onClick = {
-                                    CoroutineScope(Dispatchers.IO).launch {
-                                        appBluetoothConnectViewModel.writeDescriptor(
-                                            serviceId = characteristic.serviceId,
-                                            characteristicId = characteristic.id,
-                                            descriptorId = descriptor.id,
-                                            value = BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
-                                        )
-                                    }
-                                },
-                            ) {
-                                Text(text = "ENABLE_INDICATION_VALUE")
                             }
                         }
                     }

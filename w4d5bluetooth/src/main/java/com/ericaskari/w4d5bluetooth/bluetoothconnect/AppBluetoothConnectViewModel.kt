@@ -38,4 +38,16 @@ class AppBluetoothConnectViewModel(
             value = value
         )
     }
+
+    suspend fun enableNotificationsAndIndications(
+        deviceId: String,
+        serviceId: String,
+        characteristicId: String,
+    ) {
+        return appBluetoothGattService.enableNotificationsAndIndications(
+            deviceId = deviceId,
+            serviceId = serviceId,
+            characteristicId = characteristicId,
+        )
+    }
 }

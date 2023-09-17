@@ -22,7 +22,7 @@ interface IBluetoothDeviceServiceCharacteristicRepository {
     suspend fun insertItem(item: BluetoothDeviceServiceCharacteristic)
 
     fun getAllItemsByServiceId(id: String): Flow<List<BluetoothDeviceServiceCharacteristic>>
-    fun getItemStream(id: String): Flow<BluetoothDeviceServiceCharacteristic?>
+    fun getItemStream(id: String, serviceId: String): Flow<BluetoothDeviceServiceCharacteristic?>
 
     /**
      * Delete item from the data source

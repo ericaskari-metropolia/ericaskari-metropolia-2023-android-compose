@@ -23,8 +23,8 @@ interface BluetoothDeviceServiceCharacteristicDao {
     @Delete
     suspend fun deleteItem(item: BluetoothDeviceServiceCharacteristic)
 
-    @Query("SELECT * from BluetoothDeviceServiceCharacteristic WHERE id = :id")
-    fun getItem(id: String): Flow<BluetoothDeviceServiceCharacteristic>
+    @Query("SELECT * from BluetoothDeviceServiceCharacteristic WHERE id = :id AND serviceId = :serviceId")
+    fun getItem(id: String, serviceId: String): Flow<BluetoothDeviceServiceCharacteristic>
 
     @Query("SELECT * from BluetoothDeviceServiceCharacteristic")
     fun getAllItems(): Flow<List<BluetoothDeviceServiceCharacteristic>>

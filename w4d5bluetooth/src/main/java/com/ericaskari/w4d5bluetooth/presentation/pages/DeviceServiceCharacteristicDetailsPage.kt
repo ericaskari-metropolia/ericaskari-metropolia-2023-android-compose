@@ -25,7 +25,8 @@ fun DeviceServiceCharacteristicDetailsPage(
 
     ) {
 
-    val queriedCharacteristic = serviceId?.let { serviceCharacteristicViewModel.getItemStream(it).collectAsState(null) }
+    val queriedCharacteristic =
+        characteristicId?.let { serviceCharacteristicViewModel.getItemStream(id = it, serviceId = serviceId!!).collectAsState(null) }
 
     queriedCharacteristic?.value?.let { characteristic ->
         val descriptors = bluetoothDeviceServiceCharacteristicDescriptorViewModel.getAllItemsByCharacteristicId(characteristic.id)

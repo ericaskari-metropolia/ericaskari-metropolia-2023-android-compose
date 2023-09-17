@@ -1,7 +1,6 @@
 package com.ericaskari.w4d5bluetooth.presentation.components
 
 import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattDescriptor
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -64,37 +63,17 @@ fun AppBluetoothDeviceServiceCharacteristicList(
                             Button(
                                 onClick = {
                                     CoroutineScope(Dispatchers.IO).launch {
-                                        appBluetoothConnectViewModel.writeCharacteristic(
+                                        appBluetoothConnectViewModel.enableNotificationsAndIndications(
+                                            deviceId = characteristic.deviceId,
                                             serviceId = characteristic.serviceId,
                                             characteristicId = characteristic.id,
-                                            value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
                                         )
                                     }
                                 },
                             ) {
-                                Text(text = "ENABLE_NOTIFICATION_VALUE")
+                                Text(text = "Enable Notification")
                             }
                         }
-
-                        if (characteristic.properties and BluetoothGattCharacteristic.PROPERTY_INDICATE > 0) {
-                            Button(
-                                onClick = {
-                                    CoroutineScope(Dispatchers.IO).launch {
-                                        appBluetoothConnectViewModel.writeCharacteristic(
-                                            serviceId = characteristic.serviceId,
-                                            characteristicId = characteristic.id,
-                                            value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-                                        )
-                                    }
-                                },
-                            ) {
-                                Text(text = "ENABLE_NOTIFICATION_VALUE")
-                            }
-                        }
-
-
-                        Text("descriptors:")
-
                     }
                 },
             )

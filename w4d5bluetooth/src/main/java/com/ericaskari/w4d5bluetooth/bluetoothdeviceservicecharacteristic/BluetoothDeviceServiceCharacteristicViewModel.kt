@@ -7,6 +7,9 @@ class BluetoothDeviceServiceCharacteristicViewModel(
 ) : ViewModel() {
     val allItemsStream = repository.getAllItemsStream()
     fun getAllItemsByServiceId(id: String) = repository.getAllItemsByServiceId(id)
-    fun getItemStream(id: String) = repository.getItemStream(id)
+    fun getItemStream(id: String, serviceId: String) = repository.getItemStream(id, serviceId)
 
+    fun setCharacteristicNotification(item: BluetoothDeviceServiceCharacteristic) {
+
+    }
 }

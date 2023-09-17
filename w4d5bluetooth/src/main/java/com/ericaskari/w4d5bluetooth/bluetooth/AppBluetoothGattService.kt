@@ -60,21 +60,22 @@ class AppBluetoothGattService(
             scope.launch {
                 val infoList = bluetoothServiceInfoRepository.getAllItemsStream().first()
                 val serviceList =
-                    bluetoothGatt!!.services.map {
+                    bluetoothGatt.services.map {
                         BluetoothDeviceService.fromBluetoothGattService(
                             it,
-                            bluetoothGatt!!.device.address,
+                            bluetoothGatt.device.address,
                             infoList
                         )
                     }
 
-                bluetoothDeviceServiceRepository.syncItems(bluetoothGatt!!.device.address, *serviceList.toTypedArray())
+                bluetoothDeviceServiceRepository.syncItems(bluetoothGatt.device.address, *serviceList.toTypedArray())
 
-                bluetoothGatt!!.services.forEach { service ->
+                bluetoothGatt.services.forEach { service ->
                     val characteristics = service.characteristics.map characteristic@{ characteristic ->
                         return@characteristic BluetoothDeviceServiceCharacteristic.fromBluetoothGattCharacteristic(
                             characteristic,
-                            characteristic.service.uuid.toString()
+                            serviceId = characteristic.service.uuid.toString(),
+                            deviceId = bluetoothGatt.device.address.toString()
                         )
                     }
 
@@ -119,9 +120,6 @@ class AppBluetoothGattService(
                 }
             }
 
-            scope.launch {
-                enableNotificationsAndIndications()
-            }
         },
         onCharacteristicChanged = { bluetoothGatt, characteristic, value ->
             this.bluetoothGatt = bluetoothGatt
@@ -186,7 +184,11 @@ class AppBluetoothGattService(
     )
 
     @SuppressLint("MissingPermission")
-    suspend fun enableNotificationsAndIndications() {
+    suspend fun enableNotificationsAndIndications(
+        deviceId: String,
+        serviceId: String,
+        characteristicId: String,
+    ) {
         val prefix = "[AppBluetoothGattService][enableNotificationsAndIndications]"
         println(prefix)
 
@@ -194,11 +196,18 @@ class AppBluetoothGattService(
             println("$prefix bluetoothGatt is null.")
             return
         }
+        if (!bluetoothGatt?.device?.address.equals(deviceId, ignoreCase = true)) {
+            println("$prefix Wrong Device.")
+            return
+        }
 
-        bluetoothGatt!!.services.forEach { service ->
+        val queriedService = bluetoothGatt!!.services.find { it.uuid.toString().equals(serviceId, ignoreCase = true) }
 
-            service.characteristics.forEach { characteristic ->
+        queriedService?.let { service ->
 
+            val queriedCharacteristics = service.characteristics.find { it.uuid.toString().equals(characteristicId, ignoreCase = true) }
+
+            queriedCharacteristics?.let { characteristic ->
                 val configDescriptor = characteristic.descriptors.find {
                     it.uuid.toString().equals(CLIENT_CHARACTERISTIC_CONFIG_UUID, ignoreCase = true)
                 }
@@ -222,7 +231,6 @@ class AppBluetoothGattService(
                 }
             }
         }
-
     }
 
 

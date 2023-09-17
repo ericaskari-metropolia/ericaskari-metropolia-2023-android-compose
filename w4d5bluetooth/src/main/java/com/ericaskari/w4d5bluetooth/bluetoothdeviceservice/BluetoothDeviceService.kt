@@ -27,7 +27,7 @@ data class BluetoothDeviceService(
         ): BluetoothDeviceService {
             val gssId = item.uuid.toGss()
 
-            val nameInfo = bluetoothServiceInfoList.find { it.source == "gss" && it.uuid.equals(gssId, ignoreCase = false) }
+            val nameInfo = bluetoothServiceInfoList.find { it.source == "gss" && it.uuid.equals(gssId, ignoreCase = true) }
 
             return BluetoothDeviceService(
                 id = item.uuid.toString(),
