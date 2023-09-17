@@ -116,11 +116,49 @@ class AppBluetoothGattService(
                 }
             }
 
-//            scope.launch {
-//                enableNotificationsAndIndications()
-//            }
+            scope.launch {
+                enableNotificationsAndIndications()
+            }
         }
     )
+
+    @SuppressLint("MissingPermission")
+    suspend fun enableNotificationsAndIndications() {
+        val prefix = "[AppBluetoothGattService][enableNotificationsAndIndications]"
+        println(prefix)
+
+        if (btGatt == null) {
+            println("$prefix btGatt is null.")
+            return
+        }
+
+        btGatt!!.services.forEach { service ->
+
+            service.characteristics.forEach { characteristic ->
+
+                val configDescriptor = characteristic.descriptors.find {
+                    it.uuid.toString().equals("00002902-0000-1000-8000-00805f9b34fb", ignoreCase = true)
+                }
+                configDescriptor?.let {
+                    val notifyRegistered = btGatt?.setCharacteristicNotification(characteristic, true)
+                    println("$prefix notifyRegistered: $notifyRegistered")
+                    if (characteristic.properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY > 0) {
+                        it.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
+                        btGatt?.writeDescriptor(it)
+                    }
+
+                    if (characteristic.properties and BluetoothGattCharacteristic.PROPERTY_INDICATE > 0) {
+                        it.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE)
+                        btGatt?.writeDescriptor(it)
+                    }
+                    delay(300L)
+
+                }
+            }
+        }
+
+    }
+
 
     @SuppressLint("MissingPermission")
     suspend fun writeDescriptor(

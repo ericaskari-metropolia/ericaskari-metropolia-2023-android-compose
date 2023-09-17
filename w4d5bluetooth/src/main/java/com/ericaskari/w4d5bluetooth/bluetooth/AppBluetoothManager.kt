@@ -21,7 +21,7 @@ class AppBluetoothManager(
     var scanEnabled = false
 
     private var lastCleanupTimestamp: Long? = null
-    private val CLEANUP_DURATION = 60000L
+    private val CLEANUP_DURATION = 10000L
 
     //  Configuration for bluetooth scanning
 
