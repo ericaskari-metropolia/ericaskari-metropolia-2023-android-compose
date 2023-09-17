@@ -10,29 +10,23 @@ interface IBluetoothDeviceServiceCharacteristicDescriptorRepository {
      * Retrieve all the items from the the given data source.
      */
     fun getAllItemsStream(): Flow<List<BluetoothDeviceServiceCharacteristicDescriptor>>
-//
-//    /**
-//     * Retrieve an item from the given data source that matches with the [id].
-//     */
-//    fun getItemStream(id: String): Flow<Actor?>
 
     /**
      * Insert item in the data source
      */
     suspend fun insertItem(item: BluetoothDeviceServiceCharacteristicDescriptor)
 
-//    /**
-//     * Insert item in the data source
-//     */
-//    suspend fun insertItems(vararg items: Actor)
-//
-//    /**
-//     * Delete item from the data source
-//     */
-//    suspend fun deleteItem(item: Actor)
-//
-//    /**
-//     * Update item in the data source
-//     */
-//    suspend fun updateItem(item: Actor)
+
+    fun getAllItemsByCharacteristicId(id: String): Flow<List<BluetoothDeviceServiceCharacteristicDescriptor>>
+
+    /**
+     * Delete item from the data source
+     */
+    suspend fun deleteItem(item: BluetoothDeviceServiceCharacteristicDescriptor)
+
+    /**
+     * Insert item in the data source
+     */
+    suspend fun syncItems(vararg items: BluetoothDeviceServiceCharacteristicDescriptor): Flow<List<BluetoothDeviceServiceCharacteristicDescriptor>>
+
 }

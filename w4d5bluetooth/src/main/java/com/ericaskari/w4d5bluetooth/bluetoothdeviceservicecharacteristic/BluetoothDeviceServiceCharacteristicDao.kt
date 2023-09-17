@@ -1,6 +1,7 @@
 package com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristic
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -14,14 +15,14 @@ interface BluetoothDeviceServiceCharacteristicDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(item: BluetoothDeviceServiceCharacteristic)
 
-//    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    //    @Insert(onConflict = OnConflictStrategy.REPLACE)
 //    suspend fun insertItems(vararg items: BluetoothDeviceServiceCharacteristic)
 //
 //    @Update
 //    suspend fun update(item: Movie)
 //
-//    @Delete
-//    suspend fun delete(item: Movie)
+    @Delete
+    suspend fun deleteItem(item: BluetoothDeviceServiceCharacteristic)
 
     @Query("SELECT * from BluetoothDeviceServiceCharacteristic WHERE id = :id")
     fun getItem(id: String): Flow<BluetoothDeviceServiceCharacteristic>
@@ -29,4 +30,6 @@ interface BluetoothDeviceServiceCharacteristicDao {
     @Query("SELECT * from BluetoothDeviceServiceCharacteristic")
     fun getAllItems(): Flow<List<BluetoothDeviceServiceCharacteristic>>
 
+    @Query("SELECT * from BluetoothDeviceServiceCharacteristic WHERE serviceId = :id ORDER BY id DESC")
+    fun getAllItemsByServiceId(id: String): Flow<List<BluetoothDeviceServiceCharacteristic>>
 }

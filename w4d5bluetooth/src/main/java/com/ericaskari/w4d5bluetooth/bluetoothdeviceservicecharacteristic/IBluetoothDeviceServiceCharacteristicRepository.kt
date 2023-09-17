@@ -21,18 +21,16 @@ interface IBluetoothDeviceServiceCharacteristicRepository {
      */
     suspend fun insertItem(item: BluetoothDeviceServiceCharacteristic)
 
-//    /**
-//     * Insert item in the data source
-//     */
-//    suspend fun insertItems(vararg items: Actor)
-//
-//    /**
-//     * Delete item from the data source
-//     */
-//    suspend fun deleteItem(item: Actor)
-//
-//    /**
-//     * Update item in the data source
-//     */
-//    suspend fun updateItem(item: Actor)
+    fun getAllItemsByServiceId(id: String): Flow<List<BluetoothDeviceServiceCharacteristic>>
+
+    /**
+     * Delete item from the data source
+     */
+    suspend fun deleteItem(item: BluetoothDeviceServiceCharacteristic)
+
+    /**
+     * Insert item in the data source
+     */
+    suspend fun syncItems(vararg items: BluetoothDeviceServiceCharacteristic): Flow<List<BluetoothDeviceServiceCharacteristic>>
+
 }

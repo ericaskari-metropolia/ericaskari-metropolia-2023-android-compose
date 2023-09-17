@@ -21,7 +21,9 @@ import com.ericaskari.w4d5bluetooth.bluetooth.models.toBinaryString
 import com.ericaskari.w4d5bluetooth.bluetooth.models.toHex
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservice.BluetoothDeviceService
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservice.IBluetoothDeviceServiceRepository
+import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristic.BluetoothDeviceServiceCharacteristic
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristic.IBluetoothDeviceServiceCharacteristicRepository
+import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristicdescriptor.BluetoothDeviceServiceCharacteristicDescriptor
 import com.ericaskari.w4d5bluetooth.bluetoothdeviceservicecharacteristicdescriptor.IBluetoothDeviceServiceCharacteristicDescriptorRepository
 import com.ericaskari.w4d5bluetooth.bluetoothsearch.IBluetoothDeviceRepository
 import com.ericaskari.w4d5bluetooth.enums.ConnectionState
@@ -58,9 +60,28 @@ class AppBluetoothGattService(
             println(prefix)
 
             scope.launch {
-                bluetoothDeviceServiceRepository.syncItems(
-                    *it.keys.toList().map { BluetoothDeviceService.fromBluetoothGattService(it, btGatt!!.device.address) }.toTypedArray()
-                )
+                val serviceList = it.keys.toList().map { BluetoothDeviceService.fromBluetoothGattService(it, btGatt!!.device.address) }
+
+                bluetoothDeviceServiceRepository.syncItems(*serviceList.toTypedArray())
+
+                val characteristicList = btGatt!!.services!!.flatMap { service -> service.characteristics }.map { characteristic ->
+                    BluetoothDeviceServiceCharacteristic.fromBluetoothGattCharacteristic(
+                        characteristic,
+                        characteristic.service.uuid.toString()
+                    )
+                }
+
+                bluetoothDeviceServiceCharacteristicRepository.syncItems(*characteristicList.toTypedArray())
+
+                val descriptorList = btGatt!!.services!!
+                    .flatMap { service -> service.characteristics }
+                    .flatMap { characteristic -> characteristic.descriptors }
+                    .map { descriptor ->
+                        BluetoothDeviceServiceCharacteristicDescriptor.fromBluetoothGattDescriptor(
+                            descriptor,
+                            descriptor.characteristic.uuid.toString()
+                        )
+                    }
             }
 
             it.entries.forEach { serviceAndCharacteristicsMap ->
