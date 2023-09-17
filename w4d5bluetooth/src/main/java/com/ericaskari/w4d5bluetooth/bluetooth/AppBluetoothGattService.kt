@@ -82,6 +82,9 @@ class AppBluetoothGattService(
                             descriptor.characteristic.uuid.toString()
                         )
                     }
+
+
+                bluetoothDeviceServiceCharacteristicDescriptorRepository.syncItems(*descriptorList.toTypedArray())
             }
 
             it.entries.forEach { serviceAndCharacteristicsMap ->
