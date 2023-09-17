@@ -10,6 +10,7 @@ interface IBluetoothDeviceServiceRepository {
      * Retrieve all the items from the the given data source.
      */
     fun getAllItemsStream(): Flow<List<BluetoothDeviceService>>
+    fun getAllItemsByDeviceAddressStream(deviceAddress: String): Flow<List<BluetoothDeviceService>>
 //
 //    /**
 //     * Retrieve an item from the given data source that matches with the [id].

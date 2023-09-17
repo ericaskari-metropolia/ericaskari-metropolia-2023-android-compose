@@ -28,6 +28,7 @@ import com.ericaskari.w4d5bluetooth.application.MyApplication
 import com.ericaskari.w4d5bluetooth.application.data.AppViewModelProvider
 import com.ericaskari.w4d5bluetooth.bluetooth.AppBluetoothViewModel
 import com.ericaskari.w4d5bluetooth.bluetoothconnect.AppBluetoothConnectViewModel
+import com.ericaskari.w4d5bluetooth.bluetoothdeviceservice.BluetoothDeviceServiceViewModel
 import com.ericaskari.w4d5bluetooth.bluetoothsearch.BluetoothDevice
 import com.ericaskari.w4d5bluetooth.bluetoothsearch.BluetoothDeviceViewModel
 import com.ericaskari.w4d5bluetooth.ui.theme.FirstComposeAppTheme
@@ -64,7 +65,7 @@ class MainActivity : ComponentActivity() {
 fun ApplicationContent(
     appBluetoothViewModel: AppBluetoothViewModel = viewModel(factory = AppViewModelProvider.Factory),
     bluetoothDeviceViewModel: BluetoothDeviceViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    appBluetoothConnectViewModel: AppBluetoothConnectViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    appBluetoothConnectViewModel: AppBluetoothConnectViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
 
     val isScanning = appBluetoothViewModel.isScanning.collectAsState()
@@ -129,12 +130,30 @@ fun AppBluetoothDeviceList(data: List<BluetoothDevice>, modifier: Modifier = Mod
 
 
 @Composable
-fun AppBluetoothDeviceListItem(data: BluetoothDevice, onClick: (id: String) -> Unit) {
+fun AppBluetoothDeviceListItem(
+    bluetoothDeviceServiceViewModel: BluetoothDeviceServiceViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    data: BluetoothDevice,
+    onClick: (id: String) -> Unit
+) {
+    val services = bluetoothDeviceServiceViewModel.getAllItemsByDeviceAddressStream(data.address).collectAsState(listOf())
+
     ListItem(
         modifier = Modifier
             .clickable { onClick(data.address) },
 
         overlineContent = { Text(data.address) },
+        headlineContent = { data.deviceName?.let { Text(it) } },
+        supportingContent = { Text(data.rssi.toString() + "dBm") },
+        leadingContent = {
+            Icon(
+                Icons.Filled.AccountCircle,
+                contentDescription = "AccountCircle",
+            )
+        },
+        trailingContent = { data.lastSeen?.let { Text(SimpleDateFormat("MM/dd/yy h:mm:ss ", Locale.US).format(Date(data.lastSeen))) } }
+    )
+    ListItem(
+        overlineContent = { Text("Services: ${services.value.map { it.id }}") },
         headlineContent = { data.deviceName?.let { Text(it) } },
         supportingContent = { Text(data.rssi.toString() + "dBm") },
         leadingContent = {
