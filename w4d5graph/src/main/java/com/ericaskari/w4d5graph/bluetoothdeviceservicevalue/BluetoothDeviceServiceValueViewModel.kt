@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 class BluetoothDeviceServiceValueViewModel(
     private val repository: IBluetoothDeviceServiceValueRepository,
 ) : ViewModel() {
+    fun getAllItemsStream() = repository.getAllItemsStream()
     fun getAllItemsByServiceIdStream(deviceId: String, serviceId: String): Flow<List<BluetoothDeviceServiceValue>> {
         return repository.getAllItemsByServiceIdStream(deviceId, serviceId)
     }

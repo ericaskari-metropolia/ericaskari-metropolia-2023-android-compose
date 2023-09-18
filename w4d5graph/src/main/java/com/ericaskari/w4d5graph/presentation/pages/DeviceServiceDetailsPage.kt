@@ -16,6 +16,7 @@ import com.ericaskari.w4d5graph.bluetoothconnect.AppBluetoothConnectViewModel
 import com.ericaskari.w4d5graph.bluetoothdeviceservice.BluetoothDeviceServiceViewModel
 import com.ericaskari.w4d5graph.bluetoothdeviceservicecharacteristic.BluetoothDeviceServiceCharacteristicViewModel
 import com.ericaskari.w4d5graph.presentation.components.AppBluetoothDeviceServiceCharacteristicList
+import com.ericaskari.w4d5graph.presentation.components.BluetoothDeviceServiceValueChart
 
 @Composable
 fun DeviceServiceDetailsPage(
@@ -46,7 +47,7 @@ fun DeviceServiceDetailsPage(
                 overlineContent = { Text("Value") },
                 headlineContent = { output.value?.let { Text(text = it.toInteger().toString()) } },
             )
-
+            BluetoothDeviceServiceValueChart()
             AppBluetoothDeviceServiceCharacteristicList(
                 characteristicList = characteristic.value
             ) { characteristicId ->
