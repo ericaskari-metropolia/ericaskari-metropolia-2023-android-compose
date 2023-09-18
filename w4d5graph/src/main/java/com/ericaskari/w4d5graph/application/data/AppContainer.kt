@@ -7,6 +7,8 @@ import com.ericaskari.w4d5graph.bluetoothdeviceservicecharacteristic.BluetoothDe
 import com.ericaskari.w4d5graph.bluetoothdeviceservicecharacteristic.IBluetoothDeviceServiceCharacteristicRepository
 import com.ericaskari.w4d5graph.bluetoothdeviceservicecharacteristicdescriptor.BluetoothDeviceServiceCharacteristicDescriptorRepository
 import com.ericaskari.w4d5graph.bluetoothdeviceservicecharacteristicdescriptor.IBluetoothDeviceServiceCharacteristicDescriptorRepository
+import com.ericaskari.w4d5graph.bluetoothdeviceservicevalue.BluetoothDeviceServiceValueRepository
+import com.ericaskari.w4d5graph.bluetoothdeviceservicevalue.IBluetoothDeviceServiceValueRepository
 import com.ericaskari.w4d5graph.bluetoothsearch.BluetoothDeviceRepository
 import com.ericaskari.w4d5graph.bluetoothsearch.IBluetoothDeviceRepository
 import com.ericaskari.w4d5graph.datasource.AppDatabase
@@ -24,6 +26,7 @@ interface AppContainer {
     val bluetoothDeviceServiceCharacteristicRepository: IBluetoothDeviceServiceCharacteristicRepository
     val bluetoothDeviceServiceCharacteristicDescriptorRepository: IBluetoothDeviceServiceCharacteristicDescriptorRepository
     val bluetoothServiceInfoRepository: IBluetoothServiceInfoRepository
+    val bluetoothDeviceServiceValueRepository: IBluetoothDeviceServiceValueRepository
 }
 
 class AppDataContainer(private val context: Context) :
@@ -51,6 +54,12 @@ class AppDataContainer(private val context: Context) :
         BluetoothServiceInfoRepository(
             AppDatabase.getInstance(context).bluetoothServiceInfoDao(),
             RetrofitFactory.makeBluetoothServiceInfoApi()
+        )
+    }
+
+    override val bluetoothDeviceServiceValueRepository: IBluetoothDeviceServiceValueRepository by lazy {
+        BluetoothDeviceServiceValueRepository(
+            AppDatabase.getInstance(context).bluetoothDeviceServiceValueDao(),
         )
     }
 

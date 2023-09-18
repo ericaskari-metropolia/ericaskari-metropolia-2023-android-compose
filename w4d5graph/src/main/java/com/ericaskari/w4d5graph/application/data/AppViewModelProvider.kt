@@ -27,6 +27,7 @@ import com.ericaskari.w4d5graph.bluetoothconnect.AppBluetoothConnectViewModel
 import com.ericaskari.w4d5graph.bluetoothdeviceservice.BluetoothDeviceServiceViewModel
 import com.ericaskari.w4d5graph.bluetoothdeviceservicecharacteristic.BluetoothDeviceServiceCharacteristicViewModel
 import com.ericaskari.w4d5graph.bluetoothdeviceservicecharacteristicdescriptor.BluetoothDeviceServiceCharacteristicDescriptorViewModel
+import com.ericaskari.w4d5graph.bluetoothdeviceservicevalue.BluetoothDeviceServiceValueViewModel
 import com.ericaskari.w4d5graph.bluetoothsearch.BluetoothDeviceViewModel
 import com.ericaskari.w4d5graph.nordicsemiconductordatabase.BluetoothServiceInfoViewModel
 
@@ -69,6 +70,11 @@ object AppViewModelProvider {
         addInitializer(BluetoothServiceInfoViewModel::class) {
             BluetoothServiceInfoViewModel(
                 MyApplication().container.bluetoothServiceInfoRepository
+            )
+        }
+        addInitializer(BluetoothDeviceServiceValueViewModel::class) {
+            BluetoothDeviceServiceValueViewModel(
+                MyApplication().container.bluetoothDeviceServiceValueRepository
             )
         }
     }

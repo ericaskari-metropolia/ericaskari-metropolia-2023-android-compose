@@ -23,6 +23,8 @@ import com.ericaskari.w4d5graph.bluetoothdeviceservicecharacteristic.BluetoothDe
 import com.ericaskari.w4d5graph.bluetoothdeviceservicecharacteristic.IBluetoothDeviceServiceCharacteristicRepository
 import com.ericaskari.w4d5graph.bluetoothdeviceservicecharacteristicdescriptor.BluetoothDeviceServiceCharacteristicDescriptor
 import com.ericaskari.w4d5graph.bluetoothdeviceservicecharacteristicdescriptor.IBluetoothDeviceServiceCharacteristicDescriptorRepository
+import com.ericaskari.w4d5graph.bluetoothdeviceservicevalue.BluetoothDeviceServiceValue
+import com.ericaskari.w4d5graph.bluetoothdeviceservicevalue.IBluetoothDeviceServiceValueRepository
 import com.ericaskari.w4d5graph.enums.ConnectionState
 import com.ericaskari.w4d5graph.nordicsemiconductordatabase.IBluetoothServiceInfoRepository
 import kotlinx.coroutines.CoroutineScope
@@ -38,6 +40,7 @@ class AppBluetoothGattService(
     private val bluetoothDeviceServiceRepository: IBluetoothDeviceServiceRepository,
     private val bluetoothDeviceServiceCharacteristicRepository: IBluetoothDeviceServiceCharacteristicRepository,
     private val bluetoothDeviceServiceCharacteristicDescriptorRepository: IBluetoothDeviceServiceCharacteristicDescriptorRepository,
+    private val bluetoothDeviceServiceValueRepository: IBluetoothDeviceServiceValueRepository,
     private val btAdapter: BluetoothAdapter,
     private val scope: CoroutineScope,
     private val app: Application,
@@ -129,6 +132,13 @@ class AppBluetoothGattService(
             this.bluetoothGatt = bluetoothGatt
             output.value = value
 
+            bluetoothDeviceServiceValueRepository.insertItem(
+                BluetoothDeviceServiceValue.fromCharacteristic(
+                    deviceId = bluetoothGatt.device.address,
+                    characteristic = characteristic,
+                    value = value
+                )
+            )
             val prefix = "[AppBluetoothGattService][onCharacteristicChanged]"
 
             println(prefix)

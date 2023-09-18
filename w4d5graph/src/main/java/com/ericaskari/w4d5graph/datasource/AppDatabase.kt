@@ -12,6 +12,8 @@ import com.ericaskari.w4d5graph.bluetoothdeviceservicecharacteristic.BluetoothDe
 import com.ericaskari.w4d5graph.bluetoothdeviceservicecharacteristic.BluetoothDeviceServiceCharacteristicDao
 import com.ericaskari.w4d5graph.bluetoothdeviceservicecharacteristicdescriptor.BluetoothDeviceServiceCharacteristicDescriptor
 import com.ericaskari.w4d5graph.bluetoothdeviceservicecharacteristicdescriptor.BluetoothDeviceServiceCharacteristicDescriptorDao
+import com.ericaskari.w4d5graph.bluetoothdeviceservicevalue.BluetoothDeviceServiceValue
+import com.ericaskari.w4d5graph.bluetoothdeviceservicevalue.BluetoothDeviceServiceValueDao
 import com.ericaskari.w4d5graph.bluetoothsearch.BluetoothDevice
 import com.ericaskari.w4d5graph.bluetoothsearch.BluetoothDeviceDao
 import com.ericaskari.w4d5graph.nordicsemiconductordatabase.BluetoothServiceInfo
@@ -24,8 +26,8 @@ import kotlinx.coroutines.launch
  * @author Mohammad Askari
  */
 @Database(
-    entities = [BluetoothDevice::class, BluetoothDeviceService::class, BluetoothDeviceServiceCharacteristic::class, BluetoothDeviceServiceCharacteristicDescriptor::class, BluetoothServiceInfo::class],
-    version = 10,
+    entities = [BluetoothDevice::class, BluetoothDeviceService::class, BluetoothDeviceServiceCharacteristic::class, BluetoothDeviceServiceCharacteristicDescriptor::class, BluetoothServiceInfo::class, BluetoothDeviceServiceValue::class],
+    version = 13,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -35,6 +37,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun bluetoothDeviceServiceCharacteristicDao(): BluetoothDeviceServiceCharacteristicDao
     abstract fun bluetoothDeviceServiceCharacteristicDescriptorDao(): BluetoothDeviceServiceCharacteristicDescriptorDao
     abstract fun bluetoothServiceInfoDao(): BluetoothServiceInfoDao
+    abstract fun bluetoothDeviceServiceValueDao(): BluetoothDeviceServiceValueDao
 
     companion object {
         private var DB_NAME: String = "w4d5graph"

@@ -95,4 +95,10 @@ dependencies {
     //Permissions
     implementation("com.google.accompanist:accompanist-permissions:0.25.0")
 
+
+    // Vico Graph.
+    // For Jetpack Compose.
+    implementation("com.patrykandpatrick.vico:compose:1.12.0")
+    // For `compose`. Creates a `ChartStyle` based on an M3 Material Theme.
+    implementation("com.patrykandpatrick.vico:compose-m3:1.12.0")
 }
